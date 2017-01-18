@@ -8,6 +8,6 @@ endif()
 project(discord-cpp 0.1 CXX)
 
 file(GLOB CORE_SOURCES 
-    ${PROJECT_SOURCE_DIR}/*.h
-    ${PROJECT_SOURCE_DIR}/*.cc)
+    ${PROJECT_SOURCE_DIR}/*.hh?
+    ${PROJECT_SOURCE_DIR}/*.cc?)
 add_library(core STATIC ${CORE_SOURCES})

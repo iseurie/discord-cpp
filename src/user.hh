@@ -14,7 +14,7 @@ class User : EventEmitter {
     void release();
 }
 
-struct UserHandler : BaseEventHandler {
+typedef struct UserHandler : BaseEventHandler {
 
 }
 

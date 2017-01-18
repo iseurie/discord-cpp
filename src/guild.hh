@@ -13,7 +13,7 @@ class Guild : EventEmitter {
     void setHandler(BaseChannelHandler* h)
 }
 
-struct GuildHandler : BaseEventHandler {
+typedef struct GuildHandler : BaseEventHandler {
     
 }
 

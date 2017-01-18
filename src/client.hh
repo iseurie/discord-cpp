@@ -5,7 +5,6 @@
 #include <vector>
 #include <stdint.h>
 #include "user.hh"
-#include "api.hh"
 
 namespace dsc {
 

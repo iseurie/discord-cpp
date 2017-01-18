@@ -2,16 +2,15 @@
 #define H_DSCPP_USER
 
 #include "api.hh"
-#include "rapidjson/rapidjson.h"
 
 namespace dsc {
 
 class User : EventEmitter {
     public:
     ~User();
-    User(snowflake id);
-    User(rapidjson::Value v);
-    Error fetch();
+    User();
+    Error fetch(snowflake id);
+    Error fetch(rapidjson::Document v);
     void release();
 }
 

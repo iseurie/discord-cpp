@@ -2,7 +2,7 @@
 #define H_DSCPP_API
 
 #include <stdint.h>
-#include "rapidjson/rapidjson.h"
+#include "rapidjson/document.h"
 
 namespace dsc {
 
@@ -14,11 +14,10 @@ class Fetchable {
     private:
     snowflake id;
     public:
+    virtual Fetchable();
     virtual ~Fetchable();
-    virtual Fetchable(snowflake id);
-    virtual Fetchable(rapidjson::Value v);
-    virtual Error fetch();
-    virtual void release();
+    virtual Error fetch(snowflake id);
+    virtual Error fetch(rapidjson::Document v);
 }
 
 class EventEmitter : Fetchable {

@@ -26,10 +26,6 @@ enum ClientOAUTHScope : client_scope_t {
     WEBHOOK_INCOMING = 0x01 << 11;
 };
 
-struct BaseEventHandler {
-    
-}
-
 class Client {
     private:
     ClientType clientType;

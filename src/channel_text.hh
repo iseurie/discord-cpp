@@ -24,7 +24,7 @@ class TextDMChannel : EventEmitter {
 };
 
 struct BaseTextChannelHandler : BaseEventHandler {
-    void onMessageCreate()
+    void onMessageCreate(TextChannel* emitter, TextMessage* message);
 };
 
 }

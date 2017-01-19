@@ -7,7 +7,8 @@
 namespace dsc {
 
 typedef snowflake uint64_t;
-typedef timestamp long;
+typedef discriminator short;
+typedef utimestamp long;
 
 class Fetchable {
     private:

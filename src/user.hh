@@ -59,7 +59,7 @@ class User : EventEmitter {
     private:
         char* uname;
         char* tag;
-        char* discriminator;
+        short discriminator;
         char* email;
         std::vector<snowflake> role_ids;
         user_pmask_t perms;
@@ -69,7 +69,7 @@ class User : EventEmitter {
 struct BaseUserHandler : BaseEventHandler {
     void onAccountUpdate(User* emitter);
     void onPresenceUpdate(User* emitter);
-    void onTypingStart(User* emitter, snowflake channelID, timestamp began);
+    void onTypingStart(User* emitter, snowflake channelID, utimestamp began);
     void onMessageCreate(User* emitter, TextMessage* msg);
 };
 

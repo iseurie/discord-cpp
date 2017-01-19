@@ -2,30 +2,30 @@
 #define H_DSCPP_CHANNEL_TEXT
 
 #include "api.hh"
+#include "fetchable.hh"
 
 namespace dsc {
 
-typedef struct TextChannelHandler : BaseEventHandler {
-    
-}
-
 class TextChannel : EventEmitter {
     public:
-    ~Channel();
-    Channel();
-    Error fetch(snowflake id);
-    Error fetch(rapidjson::Document v);
-    void setHandler(BaseChannelHandler* h)
-}
+        ~TextChannel();
+        TextChannel();
+        Error fetch(snowflake id);
+        Error fetch(rapidjson::Document v);
+        void setHandler(BaseChannelHandler* h);
+};
 
 class TextDMChannel : EventEmitter {
     public:
-    DMChannel();
-    Error fetch(snowflake id);
-    Error fetch(rapidjson::Document v);
-    void setHandler(TextChannelHandler* h)
-    void release();
-}
+        DMChannel();
+        Error fetch(snowflake id);
+        Error fetch(rapidjson::Document v);
+        void setHandler(TextChannelHandler* h)
+};
+
+struct BaseTextChannelHandler : BaseEventHandler {
+    void onMessageCreate()
+};
 
 }
 #endif

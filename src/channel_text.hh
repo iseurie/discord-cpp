@@ -2,29 +2,45 @@
 #define H_DSCPP_CHANNEL_TEXT
 
 #include "api.hh"
-#include "fetchable.hh"
+#include "guild.hh"
+#include "user.hh"
 
 namespace dsc {
 
-class TextChannel : EventEmitter {
+class TextMessage : Fetchable {
+    private:
+    char* content;
+    User* author;
+    
     public:
-        ~TextChannel();
-        TextChannel();
-        Error fetch(snowflake id);
-        Error fetch(rapidjson::Document v);
-        void setHandler(BaseChannelHandler* h);
+    TextMessage();
+    ~TextChannel();
+    Error fetch(snowflake id);
+    Error fetch(rapidjson::Document v);
+    const char* getContent();
 };
 
-class TextDMChannel : EventEmitter {
+class TextChannel : Fetchable {
+    private:
+    Guild* parent;
+    
     public:
-        DMChannel();
-        Error fetch(snowflake id);
-        Error fetch(rapidjson::Document v);
-        void setHandler(TextChannelHandler* h)
+    ~TextChannel();
+    TextChannel();
+    Error fetch(snowflake id);
+    Error fetch(rapidjson::Document v);
+    Guild* getParent();
 };
 
-struct BaseTextChannelHandler : BaseEventHandler {
-    void onMessageCreate(TextChannel* emitter, TextMessage* message);
+class DMTextChannel : Fetchable {
+    private:
+    User* peer;
+    
+    public:
+    DMTextChannel();
+    Error fetch(snowflake id);
+    Error fetch(rapidjson::Document v);
+    User* getPeer();
 };
 
 }

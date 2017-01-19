@@ -42,35 +42,41 @@ enum UserPerms : user_pmask_t {
     MANAGE_MESSAGES         = 0x01 << 11,
 };
 
-class User : EventEmitter {
+class Role : Fetchable {
     public:
-        ~User();
-        User();
+        ~Role();
+        Role();
         Error fetch(snowflake id);
         Error fetch(rapidjson::Document v);
-
-        const char* getEmail();
-        const char* getUname();
-        const char* getPerms();
-        const char* getDiscriminator();
-        bool isBot();
-        bool mfaOn();
-        bool verified();
     private:
-        char* uname;
-        char* tag;
-        short discriminator;
-        char* email;
-        std::vector<snowflake> role_ids;
+        char* name;
         user_pmask_t perms;
-        bool bot, mfa, verified;
-};
+        bool hoist, mentionable, managed;
+        int pos, color_hex;
+}
 
-struct BaseUserHandler : BaseEventHandler {
-    void onAccountUpdate(User* emitter);
-    void onPresenceUpdate(User* emitter);
-    void onTypingStart(User* emitter, snowflake channelID, utimestamp began);
-    void onMessageCreate(User* emitter, TextMessage* msg);
+class User : Fetchable {
+    private:
+    char* uname;
+    char* tag;
+    ushort discriminator;
+    char* email;
+    user_pmask_t perms;
+    bool bot, mfa, verified;
+    
+    public:
+    ~User();
+    User();
+    Error fetch(snowflake id);
+    Error fetch(rapidjson::Document v);
+
+    const char* getEmail();
+    const char* getUname();
+    const char* getPerms();
+    const char* getDiscriminator();
+    bool isBot();
+    bool mfaOn();
+    bool verified();
 };
 
 }

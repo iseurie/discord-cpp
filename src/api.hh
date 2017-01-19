@@ -12,22 +12,14 @@ typedef utimestamp long;
 
 class Fetchable {
     private:
-        snowflake id;
+    snowflake id;
+    
     public:
-        virtual Fetchable();
-        virtual ~Fetchable();
-        virtual Error fetch(snowflake id);
-        virtual Error fetch(rapidjson::Document v);
+    virtual Fetchable();
+    virtual ~Fetchable();
+    virtual Error fetch(snowflake id);
+    virtual Error fetch(rapidjson::Document v);
 };
-
-class EventEmitter : Fetchable {
-    private:
-        BaseEventHandler* handler;
-    public:
-        virtual void setHandler(BaseEventHandler* h);
-};
-
-struct BaseEventHandler {};
 
 enum Error {
     NIL,

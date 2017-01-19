@@ -1,29 +1,26 @@
 #ifndef H_DSCPP_GUILD
 #define H_DSCPP_GUILD
 
-#include <vector>
+#include <map>
 #include "api.hh"
 #include "channel_text.hh"
 
 namespace dsc {
 
-class Guild : EventEmitter {
-    public:
-        ~Guild();
-        Guild();
-        Error fetch(snowflake id);
-        Error fetch(rapidjson::Document v);
-        void setHandler(GuildHandler* h);
-        const std::vector<TextChannel>* getTextChannels();
-        const std::vector<User*>* getMembers();
-        
+class Guild : Fetchable {
     private:
-        std::vector<TextChannel> channels_txt;
-        std::vector<User*> members;
-};
-
-struct BaseGuildHandler : BaseEventHandler {
+    std::map<snowflake, TextChannel> channels_txt;
+    std::map<snowflake, User> members;
+    std::map<snowflake, std::vector<Role>> roles; 
     
+    public:
+    ~Guild();
+    Guild();
+    Error fetch(snowflake id);
+    Error fetch(rapidjson::Document v);
+    const std::map<snowflake, TextChannel>* getTextChannels();
+    const std::map<snowflake, User>* getMembers();
+    const std::map<snowflake, std::vector<Role>> getRoles();
 };
 
 }

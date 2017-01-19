@@ -12,7 +12,7 @@ enum ClientType { NORMAL, BOT };
 
 typedef client_scope_t : uint16_t;
 
-enum ClientOAUTHScope : uint16_t {
+enum ClientOAUTHScope : client_scope_t {
     EMAIL       = 0x01 << 1;
     IDENTIFY    = 0x01 << 2;
     BOT         = 0x01 << 3;
@@ -26,16 +26,23 @@ enum ClientOAUTHScope : uint16_t {
     WEBHOOK_INCOMING = 0x01 << 11;
 };
 
-class Client : EventEmitter {
-    public:
-        Client();
-        Client(bool autoReconnect);
-        Error Auth(const char* user, const char* pass);
-        Error Auth(const char* token);
-        User* CurrentUser;
+struct BaseEventHandler {
+    
+}
+
+class Client {
     private:
-        std::string sessionToken;
-        client_scope_t scope;
+    ClientType clientType;
+    std::string sessionToken;
+    client_scope_t scope;
+    User currentUser;
+    
+    public:
+    Client();
+    Client(bool autoReconnect);
+    Error Auth(const char* user, const char* pass);
+    Error Auth(const char* token);
+    ClientType getClientType();
 };
 
 }

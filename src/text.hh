@@ -9,18 +9,32 @@ namespace dsc {
 
 class TextMessage : Fetchable {
     private:
-    char* content;
-    User* author;
+    char content;
+    User author;
     
     public:
     TextMessage();
     ~TextChannel();
     Error fetch(snowflake id);
-    Error fetch(rapidjson::Document v);
+    Error parse(rapidjson::Document v);
     const char* getContent();
+    const User* getAuthor;
 };
 
 class TextChannel : Fetchable {
+    private:
+    char* name, topic;
+    int pos;
+    bool private;
+    std::vector<Overwrite> overwrites;
+    public:
+    ~TextChannel();
+    TextChannel();
+    Error fetch(snowflake id);
+    Error parse(rapidjson::Document v);
+};
+
+class GuildTextChannel : TextChannel {
     private:
     Guild* parent;
     
@@ -28,19 +42,19 @@ class TextChannel : Fetchable {
     ~TextChannel();
     TextChannel();
     Error fetch(snowflake id);
-    Error fetch(rapidjson::Document v);
+    Error parse(rapidjson::Document v);
     Guild* getParent();
 };
 
-class DMTextChannel : Fetchable {
+class DirectTextChannel : TextChannel {
     private:
     User* peer;
     
     public:
-    DMTextChannel();
+    DirectTextChannel();
     Error fetch(snowflake id);
-    Error fetch(rapidjson::Document v);
-    User* getPeer();
+    Error parse(rapidjson::Document v);
+    const User* getPeer();
 };
 
 }

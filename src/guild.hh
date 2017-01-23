@@ -11,16 +11,16 @@ class Guild : Fetchable {
     private:
     std::map<snowflake, TextChannel> channels_txt;
     std::map<snowflake, User> members;
-    std::map<snowflake, std::vector<Role>> roles; 
+    std::map<snowflake, std::vector<snowflake>> roles; 
     
     public:
     ~Guild();
     Guild();
     Error fetch(snowflake id);
-    Error fetch(rapidjson::Document v);
-    const std::map<snowflake, TextChannel>* getTextChannels();
+    Error parse(rapidjson::Document v);
+    const std::map<snowflake, GuildTextChannel>* getTextChannels();
     const std::map<snowflake, User>* getMembers();
-    const std::map<snowflake, std::vector<Role>> getRoles();
+    const std::map<snowflake, std::vector<snowflake>>* getRoles();
 };
 
 }

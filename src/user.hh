@@ -5,7 +5,7 @@
 
 namespace dsc {
 
-typedef user_pmask_t uint64_t;
+typedef pmask_t uint64_t;
 typedef user_status_t int8_t;
 
 enum UserStatus : user_status_t {
@@ -14,7 +14,7 @@ enum UserStatus : user_status_t {
     ONLINE,
 };
 
-enum UserPerms : user_pmask_t {
+enum PermBits : pmask_t {
     CREATE_INSTANT_INVITE   = 0x01 << 1,
     KICK_MEMBERS            = 0x01 << 2,
     BAN_MEMBERS             = 0x01 << 3,
@@ -42,33 +42,20 @@ enum UserPerms : user_pmask_t {
     MANAGE_MESSAGES         = 0x01 << 11,
 };
 
-class Role : Fetchable {
-    public:
-        ~Role();
-        Role();
-        Error fetch(snowflake id);
-        Error fetch(rapidjson::Document v);
-    private:
-        char* name;
-        user_pmask_t perms;
-        bool hoist, mentionable, managed;
-        int pos, color_hex;
-}
-
 class User : Fetchable {
     private:
     char* uname;
     char* tag;
     ushort discriminator;
     char* email;
-    user_pmask_t perms;
+    pmask_t perms;
     bool bot, mfa, verified;
     
     public:
     ~User();
     User();
     Error fetch(snowflake id);
-    Error fetch(rapidjson::Document v);
+    Error parse(rapidjson::Document v);
 
     const char* getEmail();
     const char* getUname();

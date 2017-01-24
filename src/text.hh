@@ -27,11 +27,12 @@ class TextChannel : Fetchable {
     int pos;
     bool private;
     std::vector<Overwrite> overwrites;
+
     public:
-    ~TextChannel();
-    TextChannel();
-    Error fetch(snowflake id);
-    Error parse(rapidjson::Document v);
+    virtual ~TextChannel();
+    virtual TextChannel();
+    virtual Error fetch(snowflake id);
+    virtual Error parse(rapidjson::Document v);
 };
 
 class GuildTextChannel : TextChannel {

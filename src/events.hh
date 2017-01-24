@@ -19,6 +19,7 @@ namespace dsc {
     struct MessageCreateEvent {
         Message* message;
     };
+
     struct VoiceStatusUpdate {
         snowflake guild_id;
         snowflake channel_id;
@@ -26,22 +27,22 @@ namespace dsc {
         bool self_deaf;
     };
     struct GuildUpdateEvent {
-        Guild subject;
+        Guild* guild;
     };
     struct GuildAddEvent : GuildAddEvent{};
     struct GuildDeleteEvent {
         snowflake guild_id;
-        bool removed;
+        bool kicked;
     };
     struct GuildBanUpdate {
-        User user;
+        User* user;
         snowflake guild_id;
     };
     struct GuildBanAdd : GuildBanUpdate {};
     struct GuildBanRm : GuildBanUpdate {};
     struct GuildEmojiUpdate {
         snowflake guild_id;
-        // TOOD: implement emoji
+        std::vector<Emoji>* emojis;
     };
     struct GuildIntegrationsUpdate {
         snowflake guild_id;

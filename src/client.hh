@@ -51,13 +51,15 @@ class Client {
     User currentUser;
     std::vector<Guild> guilds;
     std::vector<DirectTextChannel> dms;
+
     public:
     Client();
     Client(bool autoReconnect);
     ClientType getClientType();
     std::vector<DirectTextChannel>* getDMs();
-    Error Auth(const char* user, const ch ar* pass);
-    Error Auth(const char* token);
+    Error auth(const char* user, const ch ar* pass);
+    Error auth(const char* token);
+    Error updateGameStatus(unsigned long idle_since, const char* game);
 };
 
 }

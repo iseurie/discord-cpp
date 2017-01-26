@@ -7,7 +7,8 @@ namespace dsc {
 
 class Emoji : Fetchable {
     private:
-    std::vector<snowflake> activeRoles;
+    int activeRoleC;
+    snowflake* activeRoleV;
     bool requireColons, managed;
     char* name;
     
@@ -17,10 +18,10 @@ class Emoji : Fetchable {
     Error parse(rapidjson::Document v);
     Error fetch(snowflake id);
 
-    std::vector<snowflake>* getActiveRoles();
+    int getActiveRoleC();
+    const Role* getActiveRoleV();
     bool requiresColons();
     bool isManaged();
-    
 };
 
 }

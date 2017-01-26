@@ -12,16 +12,20 @@ typedef discriminator short;
 class Fetchable {
     private:
     snowflake id;
+    friend class Client;
 
     public:
-    virtual Fetchable();
-    virtual ~Fetchable();
+    snowflake getId();
     virtual Error fetch(snowflake id);
     virtual Error parse(rapidjson::Document v);
     bool matches(snowflake id);
 };
 
-Fetchable::matches(snowflake id) {
+snowflake Fetchable::getId() {
+    return id;
+}
+
+bool Fetchable::matches(snowflake id) {
     return id == this.id;
 };
 

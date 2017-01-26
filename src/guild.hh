@@ -9,18 +9,24 @@ namespace dsc {
 
 class Guild : Fetchable {
     private:
-    std::map<snowflake, TextChannel> channels_txt;
-    std::map<snowflake, User> members;
-    std::map<snowflake, std::vector<snowflake>> roles; 
-    
+    const GuildEventHandler* handler;
+
     public:
+    struct GuildBanAddEvent { User* banned; };
+    struct GuildBanRmEvent { User* freed; };
+    
+    struct GuildEventHandler {
+        void onBanAdd(GuildBanAddEvent);
+        void onBanAdd(GuildBanRmEvent);
+    };
+
     ~Guild();
     Guild();
     Error fetch(snowflake id);
     Error parse(rapidjson::Document v);
-    const std::map<snowflake, GuildTextChannel>* getTextChannels();
-    const std::map<snowflake, User>* getMembers();
-    const std::map<snowflake, std::vector<snowflake>>* getRoles();
+    
+    void setHandler(const GuildEventHandler* h);
+    const GuildEventHandler* getHandler();
 };
 
 }

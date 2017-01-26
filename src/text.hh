@@ -11,6 +11,7 @@ class TextMessage : Fetchable {
     private:
     char content;
     User author;
+    snowflake guild_id;
     
     public:
     TextMessage();
@@ -19,43 +20,38 @@ class TextMessage : Fetchable {
     Error parse(rapidjson::Document v);
     const char* getContent();
     const User* getAuthor;
+    const snowflake getGuildId();
 };
 
-class TextChannel : Fetchable {
+class GuildTextChannel : Fetchable {
     private:
-    char* name, topic;
-    int pos;
-    bool private;
+    char* topic;
+    char* name;
+    int user_limit, pos;
+    snowflake guild_id;
     std::vector<Overwrite> overwrites;
-
-    public:
-    virtual ~TextChannel();
-    virtual TextChannel();
-    virtual Error fetch(snowflake id);
-    virtual Error parse(rapidjson::Document v);
-};
-
-class GuildTextChannel : TextChannel {
-    private:
-    Guild* parent;
     
     public:
-    ~TextChannel();
-    TextChannel();
+    ~GuildTextChannel();
+    GuildTextChannel();
     Error fetch(snowflake id);
     Error parse(rapidjson::Document v);
-    Guild* getParent();
+    
+    const char* getName();
+    int getUserLimit();
+    snowflake getGuildId();
+    const std::vector<Overwrite>* getOverwrites();
 };
 
-class DirectTextChannel : TextChannel {
+class DirectTextChannel : Fetchable {
     private:
-    User* peer;
+    User recipient;
     
     public:
     DirectTextChannel();
     Error fetch(snowflake id);
     Error parse(rapidjson::Document v);
-    const User* getPeer();
+    const User* getRecipient();
 };
 
 }

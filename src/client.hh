@@ -6,13 +6,19 @@
 #include <stdint.h>
 #include "user.hh"
 
-namespace dsc {
+namespace dsc
+{
 
-enum ClientType { NORMAL, BOT };
+enum ClientType
+{
+    NORMAL,
+    BOT
+};
 
 typedef client_scope_t : uint16_t;
 
-enum GatewayOPs : uint8_t {
+enum GatewayOPs : uint8_t
+{
     DISPATCH = 0,
     HEARTBEAT,
     IDENTIFY,
@@ -27,39 +33,58 @@ enum GatewayOPs : uint8_t {
     HEARTBEAT_ACK,
 };
 
-enum ClientOAUTHScope : client_scope_t {
-    EMAIL       = 0x01 << 1;
-    IDENTIFY    = 0x01 << 2;
-    BOT         = 0x01 << 3;
+enum ClientOAUTHScope : client_scope_t
+{
+    EMAIL = 0x01 << 1;
+    IDENTIFY = 0x01 << 2;
+    BOT = 0x01 << 3;
     CONNECTIONS = 0x01 << 4;
-    GUILDS      = 0x01 << 5;
+    GUILDS = 0x01 << 5;
     JOIN_GUILDS = 0x01 << 6;
-    JOIN_GDM    = 0x01 << 7;
-    MSG_READ    = 0x01 << 8;
-    RPC         = 0x01 << 9;
-    RPC_API     = 0x01 << 10;
+    JOIN_GDM = 0x01 << 7;
+    MSG_READ = 0x01 << 8;
+    RPC = 0x01 << 9;
+    RPC_API = 0x01 << 10;
     WEBHOOK_INCOMING = 0x01 << 11;
 };
 
-class Client {
-    private:
-    ClientType clientType;
-    char* sessionUri;
-    char* sessionToken;
-    char* sessionId;
-    client_scope_t scope;
-    User currentUser;
-    std::vector<Guild> guilds;
-    std::vector<DirectTextChannel> dms;
+struct BaseEventHandler
+{
+    void onConnect(EConnect){};
+    void onCurrentUserUpdate(ECurrentUserUpdate){};
+    void onGuildCreate(EGuildCreate){};
+    void onGuildDelete(EGuildDelete) {}
+    void onDisconnect(EDisconnect){};
+};
 
-    public:
+// Websocket event subscriber
+/* <Client> allows the implementation of callbacks to streaming 
+ * low-level API events. It persists no data, leaving the task of caching 
+ * clients and their IDs to the user for the sake of speed and simplicity. 
+ * Generally, event payloads passing IDs refer only to immediately relevant 
+ * objects (those already 'created' over the course of a connection's 
+ * persistence), by virtue of Discord's design. Should the user fail to cache
+ * such an object, they may choose to retrieve it using an instance of its type's 
+ * respective <Fetchable>.
+ */
+class Client
+{
+  private:
+    ClientType type;
+    char *sessionUri;
+    char *sessionToken;
+    char *sessionId;
+    client_scope_t scope;
+
+  public:
+    BaseEventHandler handler;
     Client();
-    Client(bool autoReconnect);
     ClientType getClientType();
-    std::vector<DirectTextChannel>* getDMs();
-    Error auth(const char* user, const ch ar* pass);
-    Error auth(const char* token);
-    Error updateGameStatus(unsigned long idle_since, const char* game);
+    Error auth(const char *user, const char *pass);
+    Error auth(const char *token);
+    Error connect();
+    Error resume();
+    Error updateGameStatus(unsigned long idle_since, const char *game);
 };
 
 }

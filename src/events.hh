@@ -2,67 +2,68 @@
 #define H_DSCPP_EVENTS
 
 #include "api.hh"
+#include "perms.hh"
+#include "user.hh"
 
 namespace dsc {
-    struct EventDirectTextChannel {
-        DirectTextChannel* channel;
-    };
-    struct DirectTextChannelCreate : EventDirectTextChannel {};
-    struct DirectTextChannelDelete : EventDirectTextChannel {};
-    struct EventGuildTextChannel {
-        GuildTextChannel* channel;
-    };
-    struct GuildTextChannelCreate : EventGuildTextChannel {};
-    struct GuildTextChannelUpdate : EventGuildTextChannel {};
-    struct GuildTextChannelDelete : EventGuildTextChannel {};
 
-    struct MessageCreateEvent {
-        Message* message;
-    };
+//- Events; partitions "create" payload contents and batch Adds to separate events to simplify
+struct EConnect {}; 
+struct EDisconnect {};
 
-    struct VoiceStatusUpdate {
-        snowflake guild_id;
-        snowflake channel_id;
-        bool self_mute;
-        bool self_deaf;
-    };
-    struct GuildUpdateEvent {
-        Guild* guild;
-    };
-    struct GuildAddEvent : GuildAddEvent{};
-    struct GuildDeleteEvent {
-        snowflake guild_id;
-        bool kicked;
-    };
-    struct GuildBanUpdate {
-        User* user;
-        snowflake guild_id;
-    };
-    struct GuildBanAdd : GuildBanUpdate {};
-    struct GuildBanRm : GuildBanUpdate {};
-    struct GuildEmojiUpdate {
-        snowflake guild_id;
-        std::vector<Emoji>* emojis;
-    };
-    struct GuildIntegrationsUpdate {
-        snowflake guild_id;
-    };
+struct EMessageAdd { Message subject; };
+struct EMessageDel { Message subject; };
 
-    struct StatusEvent {
-        unsigned long idle_since;
-        char* game;
-    };
+struct EGuildAdd { Guild subject; };
+struct EGuildDel { snowflake id; bool available; bool kicked; };
+struct EGuildMemberAdd {
+    // Guild-specific meta-data.
+    snowflake guild_id;
+    struct Member {
+        long joined;
+        char* nick;
+        int rolec;
+        Role* rolev;
+        bool deaf, mute;
+    }; Member meta;
+    User subject;
+};
+struct EGuildMemberDel { snowflake guild_id; EGuildMemberAdd member; };
+struct EGuildTextChannelAdd { GuildTextChannel subject; };
+struct EGuildTextChannelDel { GuildTextChannel subject; };
+struct EDirectTextChannelAdd { DirectTextChannel subject; };
+struct EDirectTextChannelDel { DirectTextChannel subject; };
+struct EGuildBanAdd { snowflake guild_id; User subject; };
+struct EGuildBanDel { snowflake guild_id; User subject; };
+struct EGuildRoleAdd { snowflake guild_id; Role role; };
+struct EGuildRoleDel { snowflake guild_id, role_id; };
+struct EGuildEmojiUpd { snowflake guild_id; int emojic; Emoji* emojiv; };
+struct EGuildIntegrationsUpd { snowflake guild_id; };
 
-    struct MessageEvent {
-        
-    };
-    
-    struct BaseEventHandler {
-        void onStatusUpdate();
-        void onPresenceUpdate();
-        void onMessageCreate(MessageEvent e);
-        void onMessageUpdate(MessageEvent e);
-    };
+struct BaseEventHandler {
+     void onConnect(EConnect) {};
+     void onDisconnect(EDisconnect) {};
+     
+     void onMessageAdd(EMessageAdd) {};
+     void onMessageDel(EMessageDel) {};
+
+     void onGuildAdd(EGuildAdd) {};
+     void onGuildDel(EguildDel) {};
+     void onGuildMemberAdd(EGuildMemberAdd) {};
+     void onGuildMemberDel(EGuildMemberDel) {};
+     void onGuildTextChannelAdd(EGuildTextChannelAdd) {};
+     void onGuildTextChannelDel(EGuildTextChannelDel) {};
+     void onGuildBanAdd(EGuildBanAdd) {};
+     void onGuildBanDel(EGuildBanDel) {};
+     void onGuildMemberAdd(EGuildMemberAdd) {};
+     void onGuildMemberDel(EGuildMemberDel) {};
+     void onGuildRoleAdd(EGuildRoleAdd) {};
+     void onGuildRoleDel(EGuildRoleDel) {};
+     void onGuildEmojiUpd(EGuildEmojiUpd) {};
+     void onGuildIntegrationsUpd(EGuildEmojiUpd) {};
+     
+};
+
 }
 
 #endif

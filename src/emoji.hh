@@ -5,14 +5,12 @@
 
 namespace dsc {
 
-class Emoji : Fetchable {
-    private:
+struct Emoji : Fetchable {
     int activeRoleC;
     snowflake* activeRoleV;
     bool requireColons, managed;
     char* name;
     
-    public:
     Emoji();
     ~Emoji();
     Error parse(rapidjson::Document v);

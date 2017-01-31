@@ -22,8 +22,7 @@ struct EGuildMemberAdd {
     struct Member {
         long joined;
         char* nick;
-        int rolec;
-        Role* rolev;
+        Fetchable::Index<Role>;
         bool deaf, mute;
     }; Member meta;
     User subject;
@@ -61,7 +60,6 @@ struct BaseEventHandler {
      void onGuildRoleDel(EGuildRoleDel) {};
      void onGuildEmojiUpd(EGuildEmojiUpd) {};
      void onGuildIntegrationsUpd(EGuildEmojiUpd) {};
-     
 };
 
 }

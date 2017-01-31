@@ -60,6 +60,7 @@ enum ClientOAUTHScope : client_scope_t
  */
 class Client
 {
+    //- TODO: clean up CURL instance in destructor
   private:
     friend class Pushable;
     ClientType type;

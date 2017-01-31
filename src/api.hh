@@ -66,13 +66,13 @@ enum RAPIRespCode : unsigned short {
     REACTION_BLOCKED        = 9*10^4+1
 };
 
-class Fetchable {
-    private:
+struct Fetchable {
     snowflake id;
-    friend class Client;
 
-    public:
-    snowflake getId();
+    template<typename T> struct List {
+        T* vec;
+        int len;
+    };
     virtual RAPIRespCode fetch(snowflake id);
     virtual RAPIRespCode parse(rapidjson::Document v);
     bool matches(snowflake id);

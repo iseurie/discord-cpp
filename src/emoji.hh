@@ -18,8 +18,7 @@ class Emoji : Fetchable {
     Error parse(rapidjson::Document v);
     Error fetch(snowflake id);
 
-    int getActiveRoleC();
-    const Role* getActiveRoleV();
+    void getActiveRoles(Role** out, int* len);
     bool requiresColons();
     bool isManaged();
 };

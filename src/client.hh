@@ -48,15 +48,6 @@ enum ClientOAUTHScope : client_scope_t
     WEBHOOK_INCOMING = 0x01 << 11;
 };
 
-struct BaseEventHandler
-{
-    void onConnect(EConnect){};
-    void onCurrentUserUpdate(ECurrentUserUpdate){};
-    void onGuildCreate(EGuildCreate){};
-    void onGuildDelete(EGuildDelete) {}
-    void onDisconnect(EDisconnect){};
-};
-
 // Websocket event subscriber
 /* <Client> allows the implementation of callbacks to streaming 
  * low-level API events. It persists no data, leaving the task of caching 
@@ -70,11 +61,15 @@ struct BaseEventHandler
 class Client
 {
   private:
+    friend class Pushable;
     ClientType type;
-    char *sessionUri;
+    char *sessionEndpointUri;
     char *sessionToken;
     char *sessionId;
     client_scope_t scope;
+    CURL* curl;
+    // to make thread-safe, call curl_global_init()
+    void getCurl();
 
   public:
     BaseEventHandler handler;
@@ -86,6 +81,11 @@ class Client
     Error resume();
     Error updateGameStatus(unsigned long idle_since, const char *game);
 };
+
+Client::getCurl() {
+    if(!curl) curl = curl_easy_init();
+    return curl;
+}
 
 }
 #endif

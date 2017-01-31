@@ -29,7 +29,8 @@ class GuildTextChannel : Fetchable {
     char* name;
     int user_limit, pos;
     snowflake guild_id;
-    std::vector<Overwrite> overwrites;
+    int overwritec;
+    Overwrite* overwritev;
     
     public:
     ~GuildTextChannel();
@@ -40,7 +41,7 @@ class GuildTextChannel : Fetchable {
     const char* getName();
     int getUserLimit();
     snowflake getGuildId();
-    const std::vector<Overwrite>* getOverwrites();
+    void getOverwrites(Overwrite** out, int* len);
 };
 
 class DirectTextChannel : Fetchable {

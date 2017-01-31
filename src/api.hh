@@ -4,8 +4,10 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <curl/curl.h>
 #include "rapidjson/document.h"
-
+#include "rapidjson/stringbuffer.h"
+#include "rapidjson/writer.h"
 namespace dsc {
 
 typedef snowflake uint64_t;

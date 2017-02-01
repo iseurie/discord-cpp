@@ -42,7 +42,7 @@ enum PermBits : pmask_t {
     MANAGE_MESSAGES         = 0x01 << 11,
 };
 
-struct User : Fetchable {
+struct User : Pushable {
     char* uname;
     char* tag;
     ushort discriminator;
@@ -53,8 +53,8 @@ struct User : Fetchable {
     public:
     ~User();
     User();
-    Error fetch(snowflake id);
-    Error parse(rapidjson::Document v);
+    ErrorCode fetch(snowflake id, long* err);
+    ErrorCode parse(rapidjson::Document v, long* err);
 };
 
 }

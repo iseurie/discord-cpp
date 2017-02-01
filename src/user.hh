@@ -42,8 +42,7 @@ enum PermBits : pmask_t {
     MANAGE_MESSAGES         = 0x01 << 11,
 };
 
-class User : Fetchable {
-    private:
+struct User : Fetchable {
     char* uname;
     char* tag;
     ushort discriminator;
@@ -56,14 +55,6 @@ class User : Fetchable {
     User();
     Error fetch(snowflake id);
     Error parse(rapidjson::Document v);
-
-    const char* getEmail();
-    const char* getUname();
-    const char* getPerms();
-    const char* getDiscriminator();
-    bool isBot();
-    bool mfaOn();
-    bool verified();
 };
 
 }

@@ -7,52 +7,36 @@
 
 namespace dsc {
 
-class TextMessage : Fetchable {
-    private:
-    char content;
+struct TextMessage : Fetchable {
+    char* content;
     User author;
     snowflake guild_id;
     
-    public:
     TextMessage();
     ~TextChannel();
     Error fetch(snowflake id);
     Error parse(rapidjson::Document v);
-    const char* getContent();
-    const User* getAuthor;
-    const snowflake getGuildId();
 };
 
-class GuildTextChannel : Fetchable {
-    private:
+struct GuildTextChannel : Fetchable {
     char* topic;
     char* name;
     int user_limit, pos;
     snowflake guild_id;
-    int overwritec;
-    Overwrite* overwritev;
-    
-    public:
+    std::vector<Overwrite> overwrites;
+
     ~GuildTextChannel();
     GuildTextChannel();
-    Error fetch(snowflake id);
-    Error parse(rapidjson::Document v);
-    
-    const char* getName();
-    int getUserLimit();
-    snowflake getGuildId();
-    void getOverwrites(Overwrite** out, int* len);
+    RAPIError fetch(snowflake id);
+    RAPIError parse(rapidjson::Document v);
 };
 
-class DirectTextChannel : Fetchable {
-    private:
+struct DirectTextChannel : Fetchable {
     User recipient;
-    
-    public:
     DirectTextChannel();
-    Error fetch(snowflake id);
-    Error parse(rapidjson::Document v);
-    const User* getRecipient();
+    RAPIError fetch(snowflake id);
+    RAPIError parse(rapidjson::Document v);
+    getRecipient();
 };
 
 }

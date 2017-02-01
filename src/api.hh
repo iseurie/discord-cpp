@@ -13,7 +13,7 @@ namespace dsc {
 typedef snowflake uint64_t;
 typedef discriminator short;
 
-enum RAPIRespCode : unsigned short {
+enum ErrorCode : unsigned short {
     OK                      = 0,
     CURL_INIT_FAILED,
     CURL_PERFORM_FAILED,
@@ -69,12 +69,8 @@ enum RAPIRespCode : unsigned short {
 struct Fetchable {
     snowflake id;
 
-    template<typename T> struct List {
-        T* vec;
-        int len;
-    };
-    virtual RAPIRespCode fetch(snowflake id);
-    virtual RAPIRespCode parse(rapidjson::Document v);
+    virtual ErrorCode fetch(snowflake id, long* err);
+    virtual ErrorCode parse(rapidjson::Document v, long* err);
     bool matches(snowflake id);
 };
 
@@ -93,14 +89,14 @@ class Pushable : Fetchable {
     rapidjson::Document serialize();
     const char* endpoint_name;
     void buildEndpointUri(char* out);
-    bool getRespCode(rapidjson::Document* d, RAPIRespCode* r);
+    bool getErrCode(rapidjson::Document* d, ErrorCode* r);
     
     public:
     marshal(char* out);
     // to make thread-safe, call curl_global_init()
-    RAPIRespCode push(Client* c, CURLcode* r);
+    ErrorCode push(Client* c, long* err);
     // to make thread-safe, call curl_global_init()
-    RAPIRespCode delete(Client* c, CURLcode* r);
+    ErrorCode delete(Client* c, long* err);
 };
 
 void Pushable::marshal(char* out) {
@@ -118,18 +114,17 @@ void Pushable::buildEndpointUri(Client* c, char* out) {
             c->sessionEndpointUri, endpoint_name, id);
 }
 
-bool Pushable::getRespCode(rapidjson::Document* d, RAPIRespCode* r) {
-    *r = static_cast<RAPIRespCode>(d["code"].GetInt());
-    return true;
+ErrorCode Pushable::getErrCode(rapidjson::Document* d) {
+    if(!d["code"].IsInt()) return JSON_PARSE_FAILED;
+    return static_cast<ErrorCode>(d["code"].GetInt());
 }
 
-long Pushable::push(Client* c, RAPIRespCode* r, bool mkNew = false) {
+ErrorCode Pushable::push(Client* c, long* err, bool mkNew = false) {
     char* uri;
-    RAPIRespCode res;
     buildEndpointUri(c, uri);
     curl_global_init();
     CURL* curl = c->getCurl();
-    if(!curl) *r = CURL_INIT_FAILED; return CURL_INIT_FAILED;
+    if(!curl) return CURL_INIT_FAILED;
     curl_easy_setopt(curl, CURLOPT_URL, uri);
     if(mkNew) {
         curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
@@ -142,17 +137,23 @@ long Pushable::push(Client* c, RAPIRespCode* r, bool mkNew = false) {
     char* payload;
     marshal(payload);
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payload);
-    auto wfunc = [](void* dat, size_t size, size_t nmemb, void* userp) {
+    ErrorCode ret;
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ret);
+    auto wfunc = [](void* dat, size_t size, size_t nmemb, void* ret) {
         using namespace rapidjson;
         Document d = new Document();
         ParseResult ok = d.Parse(static_cast<char*>(dat));
-        if(!ok) return ok;
+        if(!ok) {
+            *err = ok;
+            *ret = JSON_PARSE_FAILED;
+        }
         long httpStat;
         curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpStat);
-        if(httpStat != 200) {
-            getRespCode(d, r);
+        if(httpStat > 299) {
+            getErrCode(d, ret);
+            *err = httpStat;
         } else {
-            *r = NIL;
+            *ret = NIL;
         } return size * nmemb;
     };
     curl_easy_setopt(curl, CURLOPT_WRITEFUNC, static_cast<CURLOPT_WRITEFUNCTION_PTR>(&wfunc));
@@ -160,10 +161,10 @@ long Pushable::push(Client* c, RAPIRespCode* r, bool mkNew = false) {
     if(cresp != CURLE_OK) return res;
     curl_easy_cleanup(c->getCurl());
     curl_slist_free(header);
-    return NULL;
+    return NIL;
 }
 
-long Pushable::delete(Client* c, RAPIRespCode* r) {
+ErrorCode Pushable::delete(Client* c, long* err) {
     char* uri;
     buildEndpointUri(c, uri);
     curl_global_init();
@@ -173,18 +174,17 @@ long Pushable::delete(Client* c, RAPIRespCode* r) {
     curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
     CURLcode res = curl_easy_perform(curl);
     if(res != CURLE_OK) {
-        *r = CURL_PERFORM_FAILED;
-        return res;
+        *err = res;
+        return CURL_PERFORM_FAILED;
     }
     long httpStat;
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpStat);
     if(httpStat != 200) {
-        getRespCode(d, r);
-    } else {
-        *r = NIL;
+        *err = httpStat;
+        return getRespCode(d, err);
     }
     curl_easy_cleanup(c->getCurl());
-    return res;
+    return NIL;
 }
 
 }

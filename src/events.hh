@@ -22,11 +22,12 @@ struct EGuildMemberAdd {
     struct Member {
         long joined;
         char* nick;
-        Fetchable::Index<Role>;
+        std::vector<Role>;
         bool deaf, mute;
     }; Member meta;
     User subject;
 };
+struct ESelfVoiceStateUpdate { snowflake channel_id, bool self_mute, self_deaf; };
 struct EGuildMemberDel { snowflake guild_id; EGuildMemberAdd member; };
 struct EGuildTextChannelAdd { GuildTextChannel subject; };
 struct EGuildTextChannelDel { GuildTextChannel subject; };
@@ -60,6 +61,7 @@ struct BaseEventHandler {
      void onGuildRoleDel(EGuildRoleDel) {};
      void onGuildEmojiUpd(EGuildEmojiUpd) {};
      void onGuildIntegrationsUpd(EGuildEmojiUpd) {};
+     void onSelfVoiceStateUpd(ESelfVoiceStateUpdate) {};
 };
 
 }

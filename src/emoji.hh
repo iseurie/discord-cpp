@@ -6,19 +6,14 @@
 namespace dsc {
 
 struct Emoji : Fetchable {
-    int activeRoleC;
-    snowflake* activeRoleV;
+    std::vector<snowflake> active_roles;
     bool requireColons, managed;
     char* name;
     
     Emoji();
     ~Emoji();
-    Error parse(rapidjson::Document v);
-    Error fetch(snowflake id);
-
-    void getActiveRoles(Role** out, int* len);
-    bool requiresColons();
-    bool isManaged();
+    ErrorCode fetch(snowflake id, long* err);
+    ErrorCode parse(rapidjson::Document v, long* err);
 };
 
 }

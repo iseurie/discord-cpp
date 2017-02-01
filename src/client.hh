@@ -35,17 +35,17 @@ enum GatewayOPs : uint8_t
 
 enum ClientOAUTHScope : client_scope_t
 {
-    EMAIL = 0x01 << 1;
-    IDENTIFY = 0x01 << 2;
-    BOT = 0x01 << 3;
-    CONNECTIONS = 0x01 << 4;
-    GUILDS = 0x01 << 5;
-    JOIN_GUILDS = 0x01 << 6;
-    JOIN_GDM = 0x01 << 7;
-    MSG_READ = 0x01 << 8;
-    RPC = 0x01 << 9;
-    RPC_API = 0x01 << 10;
-    WEBHOOK_INCOMING = 0x01 << 11;
+    EMAIL       = 0x01 >> 1;
+    IDENTIFY    = 0x01 >> 2;
+    BOT         = 0x01 >> 3;
+    CONNECTIONS = 0x01 >> 4;
+    GUILDS      = 0x01 >> 5;
+    JOIN_GUILDS = 0x01 >> 6;
+    JOIN_GDM    = 0x01 >> 7;
+    MSG_READ    = 0x01 >> 8;
+    RPC         = 0x01 >> 9;
+    RPC_API     = 0x01 >> 10;
+    WEBHOOK_INCOMING = 0x01 >> 11;
 };
 
 // Websocket event subscriber
@@ -76,11 +76,11 @@ class Client
     BaseEventHandler handler;
     Client();
     ClientType getClientType();
-    Error auth(const char *user, const char *pass);
-    Error auth(const char *token);
-    Error connect();
-    Error resume();
-    Error updateGameStatus(unsigned long idle_since, const char *game);
+    ErrorCode auth(const char *user, const char *pass);
+    ErrorCode auth(const char *token);
+    ErrorCode connect();
+    ErrorCode resume();
+    ErrorCode updateGameStatus(unsigned long idle_since, const char *game);
 };
 
 Client::getCurl() {

@@ -3,18 +3,16 @@
 
 #include "api.hh"
 
-class Role : Fetchable {
-    private:
+struct Role : Fetchable {
     char* name;
     pmask_t perms;
     bool hoist, mentionable, managed;
     int pos, color_hex;
 
-    public:
     ~Role();
     Role();
-    Error fetch(snowflake id);
-    Error parse(rapidjson::Document v);
+    ErrorCode fetch(snowflake id, long* err);
+    ErrorCode parse(rapidjson::Document v, long* err);
     const char* getName();
     pmask_t getPerms();
     bool getHoist();
@@ -26,7 +24,7 @@ class Role : Fetchable {
 
 enum OverwriteType { ROLE, MEMBER };
 
-class Overwrite : Fetchable {
+struct Overwrite : Fetchable {
     private:
     OverwiteType t;
     pmask_t allow;
@@ -35,8 +33,8 @@ class Overwrite : Fetchable {
     public:
     ~Overwrite();
     Overwrite();
-    Error fetch(snowflake id);
-    Error parse(rapidjson::Document v);
+    ErrorCode fetch(snowflake id, long* err);
+    ErrorCode parse(rapidjson::Document v, long* err);
     pmask_t getAllowed();
     pmask_t getDenied();
 }

@@ -19,7 +19,7 @@ enum ErrorCode : unsigned short {
     CURL_PERFORM_FAILED,
     JSON_PARSE_FAILED,
 
-    UNKNOWN_ACCOUNT         = 1*10^4+1,
+    UNKNOWN_ACCOUNT         = 1*10000+1,
     UNKNOWN_APPLICATION,
     UNKNOWN_CHANNEL,
     UKNOWN_GUILD,
@@ -33,18 +33,18 @@ enum ErrorCode : unsigned short {
     UNKNOWN_USER,
     UNKNOWN_EMOJI,
     
-    BOTS_NOT_PERMITTED      = 2*10^4+1,
+    BOTS_NOT_PERMITTED      = 2*10000+1,
     BOTS_ONLY_PERMITTED,
     
-    MAX_GUILDS_REACHED      = 3*10^4+1,
+    MAX_GUILDS_REACHED      = 3*10000+1,
     MAX_FRIENDS_REACHED,
     MAX_PINS_REACHED,
     MAX_GUILD_ROLES_REACHED,
     TOO_MANY_REACTIONS,
     
-    UNAUTHORIZED            = 4*10^4+1,
+    UNAUTHORIZED            = 4*10000+1,
     
-    MISSING_ACCESS          = 5*10^4+1,
+    MISSING_ACCESS          = 5*10000+1,
     INVALID_ACCOUNT_TYPE,
     CANNOT_EXECUTE_ON_DM,
     EMBED_DISABLED,
@@ -63,7 +63,7 @@ enum ErrorCode : unsigned short {
     MSG_PIN_CHANNEL_INVALID,
     MSG_TOO_OLD,
 
-    REACTION_BLOCKED        = 9*10^4+1
+    REACTION_BLOCKED        = 9*10000+1
 };
 
 struct Fetchable {

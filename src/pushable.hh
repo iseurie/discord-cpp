@@ -44,24 +44,24 @@ ErrorCode Pushable::getErrCode(rapidjson::Document* d) {
     return static_cast<ErrorCode>(d["code"].GetInt());
 }
 
-ErrorCode Pushable::push(Client* c, long* err, bool mkNew = false) {
+ErrorCode Pushable::push(Client* c, long* err = NULL, bool mkNew = false) {
     char* uri;
     buildEndpointUri(c, uri);
     CURL* curl = c->getCurl();
     CURLcode res;
     if(!curl) return CURL_INIT_FAILED;
     if(res = curl_easy_setopt(curl, CURLOPT_URL, uri) != CURLE_OK) {
-        *err = res;
+        if(err) *err = res;
         return CURL_INIT_FAILED;
     }
     if(mkNew) {
         if(res = curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST")) {
-            *err = res;
+            if(err) *err = res;
             return CURL_INIT_FAILED;
         }
     } else {
         if(res = curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PATCH") != CURLE_OK) {
-            *err = res;
+            if(err) *err = res;
             return CURL_INIT_FAILED;
         }
     }
@@ -78,14 +78,14 @@ ErrorCode Pushable::push(Client* c, long* err, bool mkNew = false) {
         Document d = new Document();
         ParseResult ok = d.Parse(static_cast<char*>(dat));
         if(!ok) {
-            *err = ok;
+            if(err) *err = ok;
             *ret = JSON_PARSE_FAILED;
         }
         long httpStat;
         curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpStat);
         if(httpStat < 200 || httpStat > 300) {
             getErrCode(d, ret);
-            *err = httpStat;
+            if(err) *err = httpStat;
         } else {
             *ret = NIL;
         } return size * nmemb;
@@ -98,29 +98,29 @@ ErrorCode Pushable::push(Client* c, long* err, bool mkNew = false) {
     return NIL;
 }
 
-ErrorCode Pushable::delete(Client* c, long* err) {
+ErrorCode Pushable::delete(Client* c, long* err = NULL) {
     char* uri;
     buildEndpointUri(c, uri);
     CURL* curl = curl_easy_init();
     if(!curl) return CURL_INIT_FAILED;
     CURLcode res;
     if(res = curl_easy_setopt(curl, CURLOPT_URL, uri) != CURLE_OK) {
-        *err = res;
+        if(err) *err = res;
         return CURL_INIT_FAILED;
     }
     if(res = curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE")) {
-        *err = res;
+        if(err) *err = res;
         return CURL_INIT_FAILED;
     }
     if(res = curl_easy_perform(curl) != CURLE_OK) {
-        *err = res;
+        if(err) *err = res;
         return CURL_PERFORM_FAILED;
     }
     long httpStat;
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpStat);
     curl_easy_cleanup(c->getCurl());
     if(httpStat < 200 || httpStat > 300) {
-        *err = httpStat;
+        if(err) *err = httpStat;
         return getRespCode(d, err);
     }
     return NIL;

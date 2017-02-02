@@ -49,12 +49,22 @@ ErrorCode Pushable::push(Client* c, long* err, bool mkNew = false) {
     buildEndpointUri(c, uri);
     curl_global_init();
     CURL* curl = c->getCurl();
+    CURLcode res;
     if(!curl) return CURL_INIT_FAILED;
-    curl_easy_setopt(curl, CURLOPT_URL, uri);
+    if(res = curl_easy_setopt(curl, CURLOPT_URL, uri) != CURLE_OK) {
+        *err = res;
+        return CURL_INIT_FAILED;
+    }
     if(mkNew) {
-        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
+        if(res = curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST")) {
+            *err = res;
+            return CURL_INIT_FAILED;
+        }
     } else {
-        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PATCH");
+        if(res = curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PATCH") != CURLE_OK) {
+            *err = res;
+            return CURL_INIT_FAILED;
+        }
     }
     struct curl_slist* header;
     header = curl_slist_append(header, "Content-Type:application/json");
@@ -95,20 +105,26 @@ ErrorCode Pushable::delete(Client* c, long* err) {
     curl_global_init();
     CURL* curl = curl_easy_init();
     if(!curl) return CURL_INIT_FAILED;
-    curl_easy_setopt(curl, CURLOPT_URL, uri);
-    curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
-    CURLcode res = curl_easy_perform(curl);
-    if(res != CURLE_OK) {
+    CURLcode res;
+    if(res = curl_easy_setopt(curl, CURLOPT_URL, uri) != CURLE_OK) {
+        *err = res;
+        return CURL_INIT_FAILED;
+    }
+    if(res = curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE")) {
+        *err = res;
+        return CURL_INIT_FAILED;
+    }
+    if(res = curl_easy_perform(curl) != CURLE_OK) {
         *err = res;
         return CURL_PERFORM_FAILED;
     }
     long httpStat;
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpStat);
-    if(httpStat != 200) {
+    curl_easy_cleanup(c->getCurl());
+    if(300 <= httpStat < 200) {
         *err = httpStat;
         return getRespCode(d, err);
     }
-    curl_easy_cleanup(c->getCurl());
     return NIL;
 }
 

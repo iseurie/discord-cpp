@@ -79,7 +79,7 @@ snowflake Fetchable::getId() {
 }
 
 bool Fetchable::matches(snowflake id) {
-    return id == this.id;
+    return id == this->id;
 }
 
 }

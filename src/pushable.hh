@@ -47,7 +47,6 @@ ErrorCode Pushable::getErrCode(rapidjson::Document* d) {
 ErrorCode Pushable::push(Client* c, long* err, bool mkNew = false) {
     char* uri;
     buildEndpointUri(c, uri);
-    curl_global_init();
     CURL* curl = c->getCurl();
     CURLcode res;
     if(!curl) return CURL_INIT_FAILED;
@@ -102,7 +101,6 @@ ErrorCode Pushable::push(Client* c, long* err, bool mkNew = false) {
 ErrorCode Pushable::delete(Client* c, long* err) {
     char* uri;
     buildEndpointUri(c, uri);
-    curl_global_init();
     CURL* curl = curl_easy_init();
     if(!curl) return CURL_INIT_FAILED;
     CURLcode res;

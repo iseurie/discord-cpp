@@ -1,7 +1,11 @@
 #ifndef H_DSCPP_PUSHABLE
 #define H_DSCPP_PUSHABLE
-namespace dsc {
 
+#include "api.hh"
+#include "rapidjson/document.h"
+#include <curl/curl.h>
+
+namespace dsc {
 
 class Pushable : Fetchable {
     private:

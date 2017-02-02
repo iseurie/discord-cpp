@@ -22,15 +22,16 @@ struct Role : Fetchable {
     int getColor();
 };
 
-enum OverwriteType { ROLE, MEMBER };
 
-struct Overwrite : Fetchable {
+class Overwrite : Fetchable {
     private:
     OverwiteType t;
     pmask_t allow;
     pmask_t deny;
 
     public:
+    enum OverwriteType { ROLE, MEMBER };
+    
     ~Overwrite();
     Overwrite();
     ErrorCode fetch(snowflake id, long* err);

@@ -33,6 +33,8 @@ enum GatewayOPs : uint8_t
     HEARTBEAT_ACK,
 };
 
+// Client OAuth Scope enumeration
+// Enumerates the Discord client OAuth scope.
 enum ClientOAUTHScope : client_scope_t
 {
     EMAIL       = 0x01 >> 1;

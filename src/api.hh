@@ -3,11 +3,11 @@
 
 
 #include <stdint.h>
-#include <stdio.h>
 #include <curl/curl.h>
 #include "rapidjson/document.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"
+
 namespace dsc {
 
 typedef snowflake uint64_t;
@@ -69,8 +69,8 @@ enum ErrorCode : unsigned short {
 struct Fetchable {
     snowflake id;
 
-    virtual ErrorCode fetch(snowflake id, long* err);
-    virtual ErrorCode parse(rapidjson::Document v, long* err);
+    virtual ErrorCode fetch(snowflake id, long* err = NULL);
+    virtual ErrorCode parse(rapidjson::Document v, long* err = NULL);
     bool matches(snowflake id);
 };
 

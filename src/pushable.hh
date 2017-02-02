@@ -19,9 +19,9 @@ class Pushable : Fetchable {
     public:
     marshal(char* out);
     // to make thread-safe, call curl_global_init()
-    ErrorCode push(Client* c, long* err);
+    ErrorCode push(Client* c, long* err = NULL);
     // to make thread-safe, call curl_global_init()
-    ErrorCode delete(Client* c, long* err);
+    ErrorCode delete(Client* c, long* err = NULL);
 };
 
 void Pushable::marshal(char* out) {

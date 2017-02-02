@@ -29,7 +29,7 @@ struct Guild : Pushable {
 
 rapidjson::Document Guild::serialize(bool extra = true) {
     using namespace rapidjson;
-    Document d = new Document();
+    Document d;
     d["id"]                 = id;
     d["name"]               = name;
     d["icon"]               = icon_hash;
@@ -51,6 +51,7 @@ rapidjson::Document Guild::serialize(bool extra = true) {
             d["voice_states"][i] = (Value)voice_state[i].serialize();
         }
     }
+    return d;
 }
 
 }

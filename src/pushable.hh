@@ -75,7 +75,7 @@ ErrorCode Pushable::push(Client* c, long* err = NULL, bool mkNew = false) {
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ret);
     auto wfunc = [](void* dat, size_t size, size_t nmemb, void* ret) {
         using namespace rapidjson;
-        Document d = new Document();
+        Document d;
         ParseResult ok = d.Parse(static_cast<char*>(dat));
         if(!ok) {
             if(err) *err = ok;
@@ -88,7 +88,8 @@ ErrorCode Pushable::push(Client* c, long* err = NULL, bool mkNew = false) {
             if(err) *err = httpStat;
         } else {
             *ret = NIL;
-        } return size * nmemb;
+        }
+        return size * nmemb;
     };
     curl_easy_setopt(curl, CURLOPT_WRITEFUNC, static_cast<CURLOPT_WRITEFUNCTION_PTR>(&wfunc));
     CURLcode res = curl_easy_perform(curl);

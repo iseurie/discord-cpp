@@ -1,9 +1,13 @@
 #ifndef H_DSCPP_VOICE
 #define H_DSCPP_VOICE
 
-#include <stdint.h>
+#include "api.hh"
 
 namespace dsc {
+    struct VoiceChannel : Pushable {
+
+    }
+
     struct VoiceState {
         enum SpeakerStatus : char {
             SELF_MUTE   = 0x01,

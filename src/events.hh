@@ -21,7 +21,7 @@ struct EGuildMemberAdd {
     snowflake guild_id;
     struct Member {
         long joined;
-        char* nick;
+        std::string nick;
         std::vector<Role>;
         bool deaf, mute;
     }; Member meta;

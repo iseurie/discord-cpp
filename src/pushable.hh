@@ -12,7 +12,7 @@ class Pushable : Fetchable {
     typedef size_t(*CURL_WRITEFUNCTION_PTR)(void*, size_t, size_t, void*);
     
     rapidjson::Document serialize();
-    const char* endpoint_name;
+    std::string endpoint_name;
     void buildEndpointUri(char* out);
     bool getErrCode(rapidjson::Document* d, ErrorCode* r);
     
@@ -30,7 +30,7 @@ void Pushable::marshal(char* out) {
     StringBuffer buf;
     Writer<StringBuffer> writer(buf);
     d.Accept(writer);
-    out = buf.GetString();
+    *out = *buf.GetString();
 };
 
 

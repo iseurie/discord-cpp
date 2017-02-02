@@ -7,8 +7,8 @@
 
 namespace dsc {
 
-struct TextMessage : Fetchable {
-    char* content;
+struct TextMessage : Pushable {
+    std::string content;
     User author;
     snowflake guild_id;
     
@@ -19,8 +19,7 @@ struct TextMessage : Fetchable {
 };
 
 struct GuildTextChannel : Fetchable {
-    char* topic;
-    char* name;
+    std::string topic, name;
     int user_limit, pos;
     snowflake guild_id;
     std::vector<Overwrite> overwrites;

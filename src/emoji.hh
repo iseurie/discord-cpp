@@ -8,7 +8,7 @@ namespace dsc {
 struct Emoji : Fetchable {
     std::vector<snowflake> active_roles;
     bool requireColons, managed;
-    char* name;
+    std::string name;
     
     Emoji();
     ~Emoji();

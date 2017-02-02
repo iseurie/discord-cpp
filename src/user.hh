@@ -2,17 +2,12 @@
 #define H_DSCPP_USER
 
 #include "api.hh"
+#include <time.h>
 
 namespace dsc {
 
 typedef pmask_t uint64_t;
 typedef user_status_t int8_t;
-
-enum UserStatus : user_status_t {
-    OFFLINE = -1,
-    IDLE,
-    ONLINE,
-};
 
 enum PermBits : pmask_t {
     CREATE_INSTANT_INVITE   = 0x01 << 1,
@@ -43,18 +38,25 @@ enum PermBits : pmask_t {
 };
 
 struct User : Pushable {
-    char* uname;
-    char* tag;
-    ushort discriminator;
-    char* email;
-    pmask_t perms;
+    struct Presence {
+        enum PresenceStatus : user_status_t {
+            OFFLINE = -1,
+            IDLE,
+            ONLINE,
+        };
+        PresenceStatus stat;
+        std::vector<Role> roles;
+        std::string game;
+    }
+    std::string uname, tag, email;
     bool bot, mfa, verified;
+    ushort discriminator;
+    pmask_t perms;
     
-    public:
     ~User();
     User();
-    ErrorCode fetch(snowflake id, long* err);
-    ErrorCode parse(rapidjson::Document v, long* err);
+    ErrorCode fetch(snowflake id, long* err = NULL);
+    ErrorCode parse(rapidjson::Document v, long* err = NULL);
 };
 
 }

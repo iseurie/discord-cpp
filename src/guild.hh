@@ -4,25 +4,36 @@
 #include "rapidjson/document.h"
 #include "api.hh"
 #include "channel_text.hh"
+#include <time.h>
 
 namespace dsc {
 
 struct Guild : Pushable {
-    const char* name;
+    struct Member : User {
+        time_t joined;
+        std::string nick; // where empty, assume none
+        std::vector<Role> roles;
+        bool deaf, mute;
+    }
+
+    std::string name;
     snowflake owner_id, afk_channel_id, embed_channel_id;
     int afk_timeout, verification_level, 
             default_message_notifications, 
             mfa_level, ;
-    long joined;
+    time_t joined;
     bool embed_enabled, available;
-    const char* icon_hash, splash_hash, region;
+    std::string icon_hash, splash_hash, region;
+    std::vector<TextChannel> text_channels;
+    std::vector<VoiceChannel> voice_channels;
     std::vector<Role> roles;
     std::vector<Emoji> emojis;
     std::vector<VoiceState> voice_state;
+    std::vector<GuildMember> 
 
     ~Guild();
     Guild();
-    ErrorCode fetch(snowflake id, long* err);
+    ErrorCode fetch(snowflake id, long* err = NULL);
     rapidjson::ParseResult parse(rapidjson::Document v);
     rapidjson::Document serialize();
 };
@@ -49,7 +60,9 @@ rapidjson::Document Guild::serialize(bool extra = true) {
             d["emojis"][i] = (Value)emojis[i].serialize();
         } for(int i = 0; i < voice_state.length(); ++i) {
             d["voice_states"][i] = (Value)voice_state[i].serialize();
-        }
+        } for(int i = 0; i < members.length(); ++i) {
+            d["members"][i] = members[i];
+        } for(int i = 0; i < channels.length(); )
     }
     return d;
 }

@@ -4,15 +4,15 @@
 #include "api.hh"
 
 struct Role : Fetchable {
-    char* name;
+    std::string name;
     pmask_t perms;
     bool hoist, mentionable, managed;
     int pos, color_hex;
 
     ~Role();
     Role();
-    ErrorCode fetch(snowflake id, long* err);
-    ErrorCode parse(rapidjson::Document v, long* err);
+    ErrorCode fetch(snowflake id, long* err = NULL);
+    ErrorCode parse(rapidjson::Document v, long* err = NULL);
     const char* getName();
     pmask_t getPerms();
     bool getHoist();
@@ -34,8 +34,8 @@ class Overwrite : Fetchable {
     
     ~Overwrite();
     Overwrite();
-    ErrorCode fetch(snowflake id, long* err);
-    ErrorCode parse(rapidjson::Document v, long* err);
+    ErrorCode fetch(snowflake id, long* err = NULL);
+    ErrorCode parse(rapidjson::Document v, long* err = NULL);
     pmask_t getAllowed();
     pmask_t getDenied();
 }

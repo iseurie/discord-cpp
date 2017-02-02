@@ -83,7 +83,7 @@ ErrorCode Pushable::push(Client* c, long* err, bool mkNew = false) {
         }
         long httpStat;
         curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpStat);
-        if(httpStat > 299) {
+        if(httpStat < 200 || httpStat > 300) {
             getErrCode(d, ret);
             *err = httpStat;
         } else {
@@ -119,7 +119,7 @@ ErrorCode Pushable::delete(Client* c, long* err) {
     long httpStat;
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpStat);
     curl_easy_cleanup(c->getCurl());
-    if(300 <= httpStat < 200) {
+    if(httpStat < 200 || httpStat > 300) {
         *err = httpStat;
         return getRespCode(d, err);
     }

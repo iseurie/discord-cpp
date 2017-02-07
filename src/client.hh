@@ -89,7 +89,7 @@ RAPIError Client::mkReq(const char* dat[3], rapidjson::Document* out = NULL) {
         RAPIError e;
     };
 
-    auto setCurlOpt = [](CURLcode c) {
+    auto chkCURLErr = [](CURLcode c) {
         if(c != CURLE_OK) return RAPIError(CURL_INIT_FAILED, c);
     };
 
@@ -98,10 +98,10 @@ RAPIError Client::mkReq(const char* dat[3], rapidjson::Document* out = NULL) {
     CURLcode sig;
     struct curl_slist* header;
     header = curl_slist_append(header, "Content-Type:application/json");
-    setCurlOpt(curl_easy_setopt(curl, CURLOPT_HTTPHEADER, header));
-    setCurlOpt(curl_easy_setopt(curl, CURLOPT_URL, uri));
-    setCurlOpt(curl, CURLOPT_CUSTOMREQUEST, dat[1]);
-    setCurlOpt(curl, CURLOPT_POSTFIELDS, dat[2]);
+    chkCURLErr(curl_easy_setopt(curl, CURLOPT_HTTPHEADER, header));
+    chkCURLErr(curl_easy_setopt(curl, CURLOPT_URL, uri));
+    chkCURLErr(curl, CURLOPT_CUSTOMREQUEST, dat[1]);
+    chkCURLErr(curl, CURLOPT_POSTFIELDS, dat[2]);
     SWrite resp;
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &resp);
 

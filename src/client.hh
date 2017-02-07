@@ -133,6 +133,7 @@ RAPIError Client::mkReq(const char* dat[3], rapidjson::Document* out = NULL) {
     if(resp.e.code != JSON_PARSE_FAILED) {
         if(out) *out = resp.d;
     } return resp.e;
+    #undef CHK_CURL_ERR
 }
 
 }

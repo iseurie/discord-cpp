@@ -2,6 +2,12 @@
     "files.associations": {
         "xiosbase": "cpp",
         "xlocale": "cpp",
-        "regex": "cpp"
+        "regex": "cpp",
+        "iosfwd": "cpp",
+        "vector": "cpp",
+        "iterator": "cpp",
+        "xtree": "cpp",
+        "*h*h*hxutility": "cpp",
+        "queue": "cpp"
     }
 }

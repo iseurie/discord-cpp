@@ -84,13 +84,10 @@ class Client {
 
 // @dat An array of three strings containing, in succession, the request path, verb, and payload.
 RAPIError Client::mkReq(const char* dat[3], rapidjson::Document* out = NULL) {
+    #define CHK_CURL_ERR(e) if(e != CURLE_OK) return RAPIError(CURL_INIT_FAILED, e);
     struct SWrite {
         rapidjson::Document d;
         RAPIError e;
-    };
-
-    auto chkCURLErr = [](CURLcode c) {
-        if(c != CURLE_OK) return RAPIError(CURL_INIT_FAILED, c);
     };
 
     CURL* curl = curl_easy_init();
@@ -98,10 +95,10 @@ RAPIError Client::mkReq(const char* dat[3], rapidjson::Document* out = NULL) {
     CURLcode sig;
     struct curl_slist* header;
     header = curl_slist_append(header, "Content-Type:application/json");
-    chkCURLErr(curl_easy_setopt(curl, CURLOPT_HTTPHEADER, header));
-    chkCURLErr(curl_easy_setopt(curl, CURLOPT_URL, uri));
-    chkCURLErr(curl, CURLOPT_CUSTOMREQUEST, dat[1]);
-    chkCURLErr(curl, CURLOPT_POSTFIELDS, dat[2]);
+    CHK_CURL_ERR(curl_easy_setopt(curl, CURLOPT_HTTPHEADER, header));
+    CHK_CURL_ERR(curl_easy_setopt(curl, CURLOPT_URL, uri));
+    CHK_CURL_ERR(curl, CURLOPT_CUSTOMREQUEST, dat[1]);
+    CHK_CURL_ERR(curl, CURLOPT_POSTFIELDS, dat[2]);
     SWrite resp;
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &resp);
 

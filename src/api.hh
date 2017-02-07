@@ -23,6 +23,7 @@ enum ErrorCode : unsigned short {
     OK                      = 0,
     CURL_INIT_FAILED,
     CURL_PERFORM_FAILED,
+    CURL_INFO_FAILED,
     JSON_PARSE_FAILED,
 
     UNKNOWN_ACCOUNT         = 1*10000+1,

@@ -84,7 +84,7 @@ class Client {
 
 // @dat An array of three strings containing, in succession, the request path, verb, and payload.
 RAPIError Client::mkReq(const char* dat[3], rapidjson::Document* out = NULL) {
-    #define CHK_CURL_ERR(e) if(e != CURLE_OK) return RAPIError(CURL_INIT_FAILED, e);
+    #define CHK_CURL_ERR(e, sig) if(e != CURLE_OK) return RAPIError(CURL_sig_FAILED, e);
     struct SWrite {
         rapidjson::Document d;
         RAPIError e;
@@ -95,12 +95,12 @@ RAPIError Client::mkReq(const char* dat[3], rapidjson::Document* out = NULL) {
     CURLcode sig;
     struct curl_slist* header;
     header = curl_slist_append(header, "Content-Type:application/json");
-    CHK_CURL_ERR(curl_easy_setopt(curl, CURLOPT_HTTPHEADER, header));
-    CHK_CURL_ERR(curl_easy_setopt(curl, CURLOPT_URL, uri));
-    CHK_CURL_ERR(curl, CURLOPT_CUSTOMREQUEST, dat[1]);
-    CHK_CURL_ERR(curl, CURLOPT_POSTFIELDS, dat[2]);
+    CHK_CURL_ERR(curl_easy_setopt(curl, CURLOPT_HTTPHEADER, header), INIT);
+    CHK_CURL_ERR(curl_easy_setopt(curl, CURLOPT_URL, uri), INIT);
+    CHK_CURL_ERR(curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, dat[1]), INIT);
+    CHK_CURL_ERR(curl_easy_setopt(curl, CURLOPT_POSTFIELDS, dat[2]), INIT);
     SWrite resp;
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &resp);
+    CHK_CURL_ERR(curl_easy_setopt(curl, CURLOPT_WRITEDATA, &resp), INIT);
 
     auto wfunc = [](void* dat, size_t size, size_t nmemb, void* r) {
         SWrite* out = static_cast<SWrite*>(r);
@@ -110,7 +110,7 @@ RAPIError Client::mkReq(const char* dat[3], rapidjson::Document* out = NULL) {
             return size * nmemb;
         }
         short httpStat;
-        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpStat);
+        CHK_CURL_ERR(curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpStat), INFO);
         if(httpStat < 200 || httpStat > 300) {
             if(d["code"].IsInt()) {
                 out->e = RAPIError(static_cast<ErrorCode>(d["code"].GetInt()), NULL);
@@ -124,10 +124,9 @@ RAPIError Client::mkReq(const char* dat[3], rapidjson::Document* out = NULL) {
     };
 
     typedef size_t(*CURL_WRITEFUNCTION_PTR)(void*, size_t, size_t, void*);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNC, static_cast<CURLOPT_WRITEFUNCTION_PTR>(&wfunc));
-    if(sig = curl_easy_perform(curl) != CURLE_OK) {
-        return RAPIError(CURL_PERFORM_FAILED, sig);
-    }
+    CHK_CURL_ERR(curl_easy_setopt(curl, CURLOPT_WRITEFUNC,
+            static_cast<CURLOPT_WRITEFUNCTION_PTR>(&wfunc)), INIT);
+    CHK_CURL_ERR(curl_easy_perform(curl), PERFORM);
     curl_easy_cleanup(curl);
     curl_slist_free(header);
     if(resp.e.code != JSON_PARSE_FAILED) {

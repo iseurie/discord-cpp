@@ -14,11 +14,21 @@ struct TextMessage : Pushable {
     
     TextMessage();
     ~TextChannel();
-    Error fetch(snowflake id);
-    Error parse(rapidjson::Document v);
+    RAPIError fetch(snowflake id);
+    RAPIError parse(const rapidjson::Document* v);
 };
 
-struct GuildTextChannel : Fetchable {
+struct GuildTextChannel : Pushable {
+    struct Overwrite {
+        enum OverwriteType { ROLE, MEMBER };
+
+        OverwiteType t;
+        pmask_t allow;
+        pmask_t deny;
+
+        ~Overwrite();
+        Overwrite();
+    }
     std::string topic, name;
     int user_limit, pos;
     snowflake guild_id;
@@ -27,15 +37,15 @@ struct GuildTextChannel : Fetchable {
     ~GuildTextChannel();
     GuildTextChannel();
     RAPIError fetch(snowflake id);
-    RAPIError parse(rapidjson::Document v);
+    RAPIError parse(const rapidjson::Document* v);
+    rapidjson::Document serialize();
 };
 
 struct DirectTextChannel : Fetchable {
     User recipient;
     DirectTextChannel();
     RAPIError fetch(snowflake id);
-    RAPIError parse(rapidjson::Document v);
-    getRecipient();
+    RAPIError parse(const rapidjson::Document* v);
 };
 
 }

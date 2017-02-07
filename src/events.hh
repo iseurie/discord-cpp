@@ -19,13 +19,7 @@ struct EGuildDel { snowflake id; bool available; bool kicked; };
 struct EGuildMemberAdd {
     // Guild-specific meta-data.
     snowflake guild_id;
-    struct Member {
-        long joined;
-        std::string nick;
-        std::vector<Role>;
-        bool deaf, mute;
-    }; Member meta;
-    User subject;
+    Guild::Member subject;
 };
 struct ESelfVoiceStateUpdate { snowflake channel_id, bool self_mute, self_deaf; };
 struct EGuildMemberDel { snowflake guild_id; EGuildMemberAdd member; };

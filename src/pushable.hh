@@ -7,124 +7,55 @@
 
 namespace dsc {
 
+// Editable API Object
+/* <Pushable> objects are editable on the web stack, and deltas
+ * to their payloads and state may be 'pushed' via their methods
+ * following retrieval. */
 class Pushable : Fetchable {
     private:
-    typedef size_t(*CURL_WRITEFUNCTION_PTR)(void*, size_t, size_t, void*);
     
-    rapidjson::Document serialize();
     std::string endpoint_name;
     void buildEndpointUri(char* out);
     bool getErrCode(rapidjson::Document* d, ErrorCode* r);
     
     public:
-    marshal(char* out);
-    // to make thread-safe, call curl_global_init()
-    ErrorCode push(Client* c, long* err = NULL);
-    // to make thread-safe, call curl_global_init()
-    ErrorCode delete(Client* c, long* err = NULL);
+    void marshal(char* out);
+    //- to make thread-safe, call curl_global_init()
+    RAPIError push(Client* c, bool mkNew = false);
+    //- to make thread-safe, call curl_global_init()
+    RAPIError delete(Client* c);
 };
 
 void Pushable::marshal(char* out) {
-    using namespace rapidjson;
-    Document d = serialize();
+    rapidjson::Document d = serialize();
     StringBuffer buf;
     Writer<StringBuffer> writer(buf);
     d.Accept(writer);
     *out = *buf.GetString();
 };
 
-
-void Pushable::buildEndpointUri(Client* c, char* out) {
-    sprintf(out, "%s/%s/llu", 
-            c->sessionEndpointUri, endpoint_name, id);
-}
-
-ErrorCode Pushable::getErrCode(rapidjson::Document* d) {
-    if(!d["code"].IsInt()) return JSON_PARSE_FAILED;
-    return static_cast<ErrorCode>(d["code"].GetInt());
-}
-
-ErrorCode Pushable::push(Client* c, long* err = NULL, bool mkNew = false) {
-    char* uri;
-    buildEndpointUri(c, uri);
-    CURL* curl = c->getCurl();
-    CURLcode res;
-    if(!curl) return CURL_INIT_FAILED;
-    if(res = curl_easy_setopt(curl, CURLOPT_URL, uri) != CURLE_OK) {
-        if(err) *err = res;
-        return CURL_INIT_FAILED;
-    }
+RAPIError Pushable::push(Client* c, bool mkNew = false) {
+    RAPIError err;
+    char* path;
+    sprintf(path, "%s/%llu", endpoint_name, id);
+    char* verb;
     if(mkNew) {
-        if(res = curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST")) {
-            if(err) *err = res;
-            return CURL_INIT_FAILED;
-        }
+        verb = "POST";
     } else {
-        if(res = curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PATCH") != CURLE_OK) {
-            if(err) *err = res;
-            return CURL_INIT_FAILED;
-        }
+        verb = "PATCH";
     }
-    struct curl_slist* header;
-    header = curl_slist_append(header, "Content-Type:application/json");
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, header);
     char* payload;
     marshal(payload);
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payload);
-    ErrorCode ret;
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ret);
-    auto wfunc = [](void* dat, size_t size, size_t nmemb, void* ret) {
-        using namespace rapidjson;
-        Document d;
-        ParseResult ok = d.Parse(static_cast<char*>(dat));
-        if(!ok) {
-            if(err) *err = ok;
-            *ret = JSON_PARSE_FAILED;
-        }
-        long httpStat;
-        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpStat);
-        if(httpStat < 200 || httpStat > 300) {
-            getErrCode(d, ret);
-            if(err) *err = httpStat;
-        } else {
-            *ret = NIL;
-        }
-        return size * nmemb;
-    };
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNC, static_cast<CURLOPT_WRITEFUNCTION_PTR>(&wfunc));
-    CURLcode res = curl_easy_perform(curl);
-    if(cresp != CURLE_OK) return res;
-    curl_easy_cleanup(c->getCurl());
-    curl_slist_free(header);
-    return NIL;
+    return c->mkReq((const char*[]){path, verb, payload});
 }
 
-ErrorCode Pushable::delete(Client* c, long* err = NULL) {
-    char* uri;
-    buildEndpointUri(c, uri);
-    CURL* curl = curl_easy_init();
-    if(!curl) return CURL_INIT_FAILED;
-    CURLcode res;
-    if(res = curl_easy_setopt(curl, CURLOPT_URL, uri) != CURLE_OK) {
-        if(err) *err = res;
-        return CURL_INIT_FAILED;
-    }
-    if(res = curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE")) {
-        if(err) *err = res;
-        return CURL_INIT_FAILED;
-    }
-    if(res = curl_easy_perform(curl) != CURLE_OK) {
-        if(err) *err = res;
-        return CURL_PERFORM_FAILED;
-    }
-    long httpStat;
-    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpStat);
-    curl_easy_cleanup(c->getCurl());
-    if(httpStat < 200 || httpStat > 300) {
-        if(err) *err = httpStat;
-        return getRespCode(d, err);
-    }
-    return NIL;
+RAPIError Pushable::delete(Client* c) {
+    char* path;
+    sprintf(path, "%s/%llu", endpoint_name, id);
+    char* verb = "DELETE"
+    char* payload;
+    marshal(payload);
+    return c->mkReq((const char*[]){path, verb, payload});
 }
 
 }

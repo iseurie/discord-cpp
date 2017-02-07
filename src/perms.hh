@@ -3,40 +3,21 @@
 
 #include "api.hh"
 
-struct Role : Fetchable {
+// Editable Role object
+/* The Guild Role stores a permissions bitmask,
+ * in addition to a name and various data
+ * for its display in the client roster. */
+
+struct Role : Pushable {
     std::string name;
     pmask_t perms;
     bool hoist, mentionable, managed;
     int pos, color_hex;
 
+    RAPIError fetch(snowflake id);
+    RAPIError parse(const rapidjson::Document* v);
     ~Role();
     Role();
-    ErrorCode fetch(snowflake id, long* err = NULL);
-    ErrorCode parse(rapidjson::Document v, long* err = NULL);
-    const char* getName();
-    pmask_t getPerms();
-    bool getHoist();
-    bool getMentionable();
-    bool getManaged();
-    int getPos();
-    int getColor();
 };
 
-
-class Overwrite : Fetchable {
-    private:
-    OverwiteType t;
-    pmask_t allow;
-    pmask_t deny;
-
-    public:
-    enum OverwriteType { ROLE, MEMBER };
-    
-    ~Overwrite();
-    Overwrite();
-    ErrorCode fetch(snowflake id, long* err = NULL);
-    ErrorCode parse(rapidjson::Document v, long* err = NULL);
-    pmask_t getAllowed();
-    pmask_t getDenied();
-}
 #endif

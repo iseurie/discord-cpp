@@ -10,9 +10,15 @@
 
 namespace dsc {
 
+// Used to store Discord object IDs
 typedef snowflake uint64_t;
+// Used to store Discord user discriminators
 typedef discriminator unsigned short;
 
+// API error code enumeration
+/* This enum contains Discord error codes consistent across
+ * the web stack, in addition to a few enumerations for internal
+ * failures of the client-side implementation. */
 enum ErrorCode : unsigned short {
     OK                      = 0,
     CURL_INIT_FAILED,
@@ -66,11 +72,30 @@ enum ErrorCode : unsigned short {
     REACTION_BLOCKED        = 9*10000+1
 };
 
+struct RAPIError {
+    ErrorCode code;
+    union USig {
+        rapidjson::ParseError parsing;
+        CURLcode curl;
+        short http;
+    };
+    USig sig;
+
+    RAPIError(ErrorCode code, USig sig) {
+        this->code = code;
+        this->sig = sig;
+    }
+}
+
+// struct <Fetchable>
+/* <Fetchable> is an interface to objects which can be retrieved by ID,
+ * or 'fetched,' directly from the Discord RESTful backend. */
 struct Fetchable {
     snowflake id;
 
-    virtual ErrorCode fetch(snowflake id, long* err = NULL);
-    virtual ErrorCode parse(rapidjson::Document v, long* err = NULL);
+    virtual RAPIError fetch(snowflake id);
+    virtual RAPIError parse(const rapidjson::Document* v);
+    virtual rapidjson::Document serialize();
     bool matches(snowflake id);
 };
 

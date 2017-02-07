@@ -3,22 +3,16 @@
 
 #include <string>
 #include <vector>
+#include <stdio.h>
 #include <stdint.h>
+#include <time.h>
 #include "user.hh"
 
-namespace dsc
-{
-
-enum ClientType
-{
-    NORMAL,
-    BOT
-};
+namespace dsc {
 
 typedef client_scope_t : uint16_t;
 
-enum GatewayOPs : uint8_t
-{
+enum GatewayOPs : uint8_t {
     DISPATCH = 0,
     HEARTBEAT,
     IDENTIFY,
@@ -35,8 +29,7 @@ enum GatewayOPs : uint8_t
 
 // Client OAuth Scope enumeration
 // Enumerates the Discord client OAuth scope.
-enum ClientOAUTHScope : client_scope_t
-{
+enum ClientOAuthScope : client_scope_t {
     EMAIL       = 0x01 >> 1;
     IDENTIFY    = 0x01 >> 2;
     BOT         = 0x01 >> 3;
@@ -60,34 +53,89 @@ enum ClientOAUTHScope : client_scope_t
  * such an object, they may choose to retrieve it using an instance of its type's 
  * respective <Fetchable>.
  */
-class Client
-{
-    //- TODO: clean up CURL instance in destructor
-  private:
+class Client {
+    private:
     friend class Pushable;
     ClientType type;
-    char *sessionEndpointUri;
-    char *sessionToken;
-    char *sessionId;
+    std::string sessionEndpointUri, sessionToken;
+    snowflake session_id[2];
     client_scope_t scope;
-    CURL* curl;
-    // to make thread-safe, call curl_global_init()
-    void getCurl();
+    RAPIError mkReq(const char* dat[3], rapidjson::Document* out);
 
-  public:
-    BaseEventHandler handler;
-    Client();
+    public:
+    enum ClientType { NORMAL, BOT };
+    
     ClientType getClientType();
-    ErrorCode auth(const char *user, const char *pass);
-    ErrorCode auth(const char *token);
-    ErrorCode connect();
-    ErrorCode resume();
-    ErrorCode updateGameStatus(unsigned long idle_since, const char *game);
+    
+    // A <BaseEventHandler>, for the user to assign with callbacks. 
+    BaseEventHandler handler;
+    // Handles user authentication
+    RAPIError auth(const char *user, const char *pass);
+    // Handles bot or OAuth bearer authentication
+    RAPIError auth(const char *token, ClientType t);
+    RAPIError connect();
+    RAPIError resume();
+    RAPIError hangup();
+    RAPIError updateGameStatus(time_t idle_since, const char *game);
+    Client();
+    ~Client();
 };
 
-Client::getCurl() {
-    if(!curl) curl = curl_easy_init();
-    return curl;
+
+// @dat An array of three strings containing, in succession, the request path, verb, and payload.
+RAPIError Client::mkReq(const char* dat[3], rapidjson::Document* out = NULL) {
+    struct SWrite {
+        rapidjson::Document d;
+        RAPIError e;
+    };
+
+    auto setCurlOpt = [](CURLcode c) {
+        if(c != CURLE_OK) return RAPIError(CURL_INIT_FAILED, c);
+    };
+
+    CURL* curl = curl_easy_init();
+    if(!curl) return CURL_INIT_FAILED;
+    CURLcode sig;
+    struct curl_slist* header;
+    header = curl_slist_append(header, "Content-Type:application/json");
+    setCurlOpt(curl_easy_setopt(curl, CURLOPT_HTTPHEADER, header));
+    setCurlOpt(curl_easy_setopt(curl, CURLOPT_URL, uri));
+    setCurlOpt(curl, CURLOPT_CUSTOMREQUEST, dat[1]);
+    setCurlOpt(curl, CURLOPT_POSTFIELDS, dat[2]);
+    SWrite resp;
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &resp);
+
+    auto wfunc = [](void* dat, size_t size, size_t nmemb, void* r) {
+        SWrite* out = static_cast<SWrite*>(r);
+        ParseResult sig = out->d.Parse(static_cast<char*>(dat));
+        if(sig.IsError()) {
+            out->e = RAPIError(JSON_PARSE_FAILED, ok);
+            return size * nmemb;
+        }
+        short httpStat;
+        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpStat);
+        if(httpStat < 200 || httpStat > 300) {
+            if(d["code"].IsInt()) {
+                out->e = RAPIError(static_cast<ErrorCode>(d["code"].GetInt()), NULL);
+            } else {
+                out->e = RAPIError(JSON_PARSE_FAILED, httpStat);
+            }
+        } else {
+            out->e = RAPIError(NIL, NULL);
+        }
+        return size * nmemb;
+    };
+
+    typedef size_t(*CURL_WRITEFUNCTION_PTR)(void*, size_t, size_t, void*);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNC, static_cast<CURLOPT_WRITEFUNCTION_PTR>(&wfunc));
+    if(sig = curl_easy_perform(curl) != CURLE_OK) {
+        return RAPIError(CURL_PERFORM_FAILED, sig);
+    }
+    curl_easy_cleanup(curl);
+    curl_slist_free(header);
+    if(resp.e.code != JSON_PARSE_FAILED) {
+        if(out) *out = resp.d;
+    } return resp.e;
 }
 
 }

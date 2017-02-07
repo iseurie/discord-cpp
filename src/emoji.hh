@@ -12,8 +12,8 @@ struct Emoji : Fetchable {
     
     Emoji();
     ~Emoji();
-    ErrorCode fetch(snowflake id, long* err);
-    ErrorCode parse(rapidjson::Document v, long* err);
+    RAPIError fetch(snowflake id);
+    RAPIError parse(const rapidjson::Document* v);
 };
 
 }

@@ -96,6 +96,8 @@ RAPIError Client::mkReq(const char* dat[3], rapidjson::Document* out = NULL) {
     struct curl_slist* header;
     header = curl_slist_append(header, "Content-Type:application/json");
     CHK_CURL_ERR(curl_easy_setopt(curl, CURLOPT_HTTPHEADER, header), INIT);
+    char* uri;
+    sprintf(uri, "http://discordapp.com/%s", dat[0]);
     CHK_CURL_ERR(curl_easy_setopt(curl, CURLOPT_URL, uri), INIT);
     CHK_CURL_ERR(curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, dat[1]), INIT);
     CHK_CURL_ERR(curl_easy_setopt(curl, CURLOPT_POSTFIELDS, dat[2]), INIT);

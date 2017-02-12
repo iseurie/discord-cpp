@@ -60,7 +60,7 @@ class Client {
     std::string sessionEndpointUri, sessionToken;
     snowflake session_id[2];
     client_scope_t scope;
-    RAPIError mkReq(const char* dat[3], rapidjson::Document* out);
+    WAPIError mkReq(const char* dat[3], rapidjson::Document* out);
 
     public:
     enum ClientType { NORMAL, BOT };
@@ -70,24 +70,24 @@ class Client {
     // A <BaseEventHandler>, for the user to assign with callbacks. 
     BaseEventHandler handler;
     // Handles user authentication
-    RAPIError auth(const char *user, const char *pass);
+    WAPIError auth(const char *user, const char *pass);
     // Handles bot or OAuth bearer authentication
-    RAPIError auth(const char *token, ClientType t);
-    RAPIError connect();
-    RAPIError resume();
-    RAPIError hangup();
-    RAPIError updateGameStatus(time_t idle_since, const char *game);
+    WAPIError auth(const char *token, ClientType t);
+    WAPIError connect();
+    WAPIError resume();
+    WAPIError hangup();
+    WAPIError updateGameStatus(time_t idle_since, const char *game);
     Client();
     ~Client();
 };
 
 
 // @dat An array of three strings containing, in succession, the request path, verb, and payload.
-RAPIError Client::mkReq(const char* dat[3], rapidjson::Document* out = NULL) {
-    #define CHK_CURL_ERR(e, sig) if(e != CURLE_OK) return RAPIError(CURL_sig_FAILED, e);
+WAPIError Client::mkReq(const char* dat[3], rapidjson::Document* out = NULL) {
+    #define CHK_CURL_ERR(e, sig) if(e != CURLE_OK) return WAPIError(CURL_sig_FAILED, e);
     struct SWrite {
         rapidjson::Document d;
-        RAPIError e;
+        WAPIError e;
     };
 
     CURL* curl = curl_easy_init();
@@ -108,19 +108,19 @@ RAPIError Client::mkReq(const char* dat[3], rapidjson::Document* out = NULL) {
         SWrite* out = static_cast<SWrite*>(r);
         ParseResult sig = out->d.Parse(static_cast<char*>(dat));
         if(sig.IsError()) {
-            out->e = RAPIError(JSON_PARSE_FAILED, ok);
+            out->e = WAPIError(JSON_PARSE_FAILED, ok);
             return size * nmemb;
         }
         short httpStat;
         CHK_CURL_ERR(curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpStat), INFO);
         if(httpStat < 200 || httpStat > 300) {
             if(d["code"].IsInt()) {
-                out->e = RAPIError(static_cast<ErrorCode>(d["code"].GetInt()), NULL);
+                out->e = WAPIError(static_cast<ErrorCode>(d["code"].GetInt()), NULL);
             } else {
-                out->e = RAPIError(JSON_PARSE_FAILED, httpStat);
+                out->e = WAPIError(JSON_PARSE_FAILED, httpStat);
             }
         } else {
-            out->e = RAPIError(NIL, NULL);
+            out->e = WAPIError(NIL, NULL);
         }
         return size * nmemb;
     };

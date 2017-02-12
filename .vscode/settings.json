@@ -8,6 +8,9 @@
         "iterator": "cpp",
         "xtree": "cpp",
         "*h*h*hxutility": "cpp",
-        "queue": "cpp"
+        "queue": "cpp",
+        "*h*h*h*htuple": "cpp",
+        "xutility": "cpp",
+        "functional": "cpp"
     }
 }

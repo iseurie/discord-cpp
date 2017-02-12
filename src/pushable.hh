@@ -13,7 +13,6 @@ namespace dsc {
  * following retrieval. */
 class Pushable : Fetchable {
     private:
-    
     std::string endpoint_name;
     void buildEndpointUri(char* out);
     bool getErrCode(rapidjson::Document* d, ErrorCode* r);
@@ -21,9 +20,9 @@ class Pushable : Fetchable {
     public:
     void marshal(char* out);
     //- to make thread-safe, call curl_global_init()
-    RAPIError push(Client* c, bool mkNew = false);
+    WAPIError push(Client* c, bool mkNew = false);
     //- to make thread-safe, call curl_global_init()
-    RAPIError delete(Client* c);
+    WAPIError delete(Client* c);
 };
 
 void Pushable::marshal(char* out) {
@@ -34,8 +33,9 @@ void Pushable::marshal(char* out) {
     *out = *buf.GetString();
 };
 
-RAPIError Pushable::push(Client* c, bool mkNew = false) {
-    RAPIError err;
+
+WAPIError Pushable::push(Client* c, bool mkNew = false) {
+    WAPIError err;
     char* path;
     sprintf(path, "%s/%llu", endpoint_name, id);
     char* verb;
@@ -49,7 +49,7 @@ RAPIError Pushable::push(Client* c, bool mkNew = false) {
     return c->mkReq((const char*[]){path, verb, payload});
 }
 
-RAPIError Pushable::delete(Client* c) {
+WAPIError Pushable::delete(Client* c) {
     char* path;
     sprintf(path, "%s/%llu", endpoint_name, id);
     char* verb = "DELETE"

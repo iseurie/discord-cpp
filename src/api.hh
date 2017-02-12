@@ -73,7 +73,7 @@ enum ErrorCode : unsigned short {
     REACTION_BLOCKED        = 9*10000+1
 };
 
-struct RAPIError {
+struct WAPIError {
     ErrorCode code;
     union USig {
         rapidjson::ParseError parsing;
@@ -82,7 +82,7 @@ struct RAPIError {
     };
     USig sig;
 
-    RAPIError(ErrorCode code, USig sig) {
+    WAPIError(ErrorCode code, USig sig) {
         this->code = code;
         this->sig = sig;
     }
@@ -94,15 +94,12 @@ struct RAPIError {
 struct Fetchable {
     snowflake id;
 
-    virtual RAPIError fetch(snowflake id);
-    virtual RAPIError parse(const rapidjson::Document* v);
+    virtual WAPIError fetch(snowflake id);
+    virtual WAPIError parse(const rapidjson::Document* v);
+
     virtual rapidjson::Document serialize();
     bool matches(snowflake id);
 };
-
-snowflake Fetchable::getId() {
-    return id;
-}
 
 bool Fetchable::matches(snowflake id) {
     return id == this->id;

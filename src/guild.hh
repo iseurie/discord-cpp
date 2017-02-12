@@ -15,39 +15,36 @@ struct Guild : Pushable {
         std::vector<Role> roles;
         bool deaf, mute;
     }
+
+    time_t joined_at;
+    bool embed_enabled, available;
+    std::string icon_hash, splash_hash, region;
     
-    // struct <Extra>
-    // Data fields sent only in `GUILD_CREATE`.
-    struct Extra {
-        time_t joined_at;
-        bool embed_enabled, available;
-        std::string icon_hash, splash_hash, region;
-        std::vector<TextChannel> text_channels;
-        std::vector<VoiceChannel> voice_channels;
-        std::vector<Role> roles;
-        std::vector<Emoji> emojis;
-        std::vector<VoiceState> voice_state;
-        std::vector<GuildMember>;
-    };
-    
-    std::string name;
-    snowflake owner_id, afk_channel_id, embed_channel_id;
+    std::string icon_hash, splash_hash, region;
+    std::vector<TextChannel> text_channels;
+    std::vector<VoiceChannel> voice_channels;
+    std::vector<Role> roles;
+    std::vector<Emoji> emojis;
+    std::vector<VoiceState> voice_state;
+    std::vector<GuildMember>;
     int afk_timeout, verification_level, 
             default_message_notifications, 
             mfa_level;
+    std::string name;
+    snowflake owner_id, afk_channel_id, embed_channel_id;
+
     // - heap-allocated references?
     Extra extra;
     
     ~Guild();
     Guild();
-    RAPIError fetch(snowflake id);
+    WAPIError fetch(snowflake id);
     rapidjson::ParseResult parse(rapidjson::Document v);
     rapidjson::Document serialize();
 };
 
-rapidjson::Document Guild::serialize(bool extra = true) {
-    using namespace rapidjson;
-    Document d;
+rapidjson::Document Guild::serialize() {
+    rapidjson::Document d;
     d["id"]                 = id;
     d["name"]               = name;
     d["icon"]               = icon_hash;
@@ -60,20 +57,18 @@ rapidjson::Document Guild::serialize(bool extra = true) {
     d["embed_channel_id"]   = embed_channel_id;
     d["verification_level"] = verification_level;
     d["default_message_notifications"] = default_message_notifications;
-    if(extra) {
-        for(int i = 0; i < roles.length(); ++i) {
-            d["roles"][i] = (Value)extra.roles[i].serialize();
-        } for(int i = 0; i < extra.emojis.length(); ++i) {
-            d["emojis"][i] = (Value)extra.emojis[i].serialize();
-        } for(int i = 0; i < extra.voice_state.length(); ++i) {
-            d["voice_states"][i] = (Value)extra.voice_state[i].serialize();
-        } for(int i = 0; i < extra.members.length(); ++i) {
-            d["members"][i] = extra.members[i].serialize();
-        } for(int i = 0; i < extra.text_channels.length(); ++i) {
-            d["channels"][i] = extra.text_channels[i].serialize();
-        } for(int i = 0; i < extra.voice_channels.length(); ++i) {
-            d["channels"][i] = extra.voice_channels[i].serialize();
-        }
+    for(int i = 0; i < roles.length(); ++i) {
+        d["roles"][i] = roles[i].serialize();
+    } for(int i = 0; i < emojis.length(); ++i) {
+        d["emojis"][i] = (Value)emojis[i].serialize();
+    } for(int i = 0; i < voice_state.length(); ++i) {
+        d["voice_states"][i] = (Value)voice_state[i].serialize();
+    } for(int i = 0; i < members.length(); ++i) {
+        d["members"][i] = members[i].serialize();
+    } for(int i = 0; i < text_channels.length(); ++i) {
+        d["channels"][i] = text_channels[i].serialize();
+    } for(int i = 0; i < voice_channels.length(); ++i) {
+        d["channels"][i] = voice_channels[i].serialize();
     }
     return d;
 }

@@ -14,8 +14,8 @@ struct Role : Pushable {
     bool hoist, mentionable, managed;
     int pos, color_hex;
 
-    RAPIError fetch(snowflake id);
-    RAPIError parse(const rapidjson::Document* v);
+    WAPIError fetch(snowflake id);
+    WAPIError parse(const rapidjson::Document* v);
     ~Role();
     Role();
 };

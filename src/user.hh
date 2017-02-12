@@ -55,8 +55,8 @@ struct User : Pushable {
     
     ~User();
     User();
-    RAPIError fetch(snowflake id);
-    RAPIError parse(const rapidjson::Document* v);
+    WAPIError fetch(snowflake id);
+    WAPIError parse(const rapidjson::Document* v);
 };
 
 }

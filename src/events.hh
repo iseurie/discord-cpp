@@ -14,11 +14,23 @@ struct EDisconnect {};
 struct EMessageAdd { Message subject; };
 struct EMessageDel { Message subject; };
 
-struct EGuildAdd { Guild subject; };
+struct EGuildAdd { 
+    struct Meta {
+        time_t joined_at;
+        bool available;
+        std::vector<Guild::Member> members;
+        std::vector<TextChannel> text_channels;
+        std::vector<VoiceChannel> voice_channels;
+        std::vector<User::Presence> presences;
+    };
+    Meta meta;
+    Guild subject;
+};
 struct EGuildDel { snowflake id; bool available; bool kicked; };
 struct EGuildMemberAdd {
     // Guild-specific meta-data.
     snowflake guild_id;
+    // The guild member in question.
     Guild::Member subject;
 };
 struct ESelfVoiceStateUpdate { snowflake channel_id, bool self_mute, self_deaf; };

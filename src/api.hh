@@ -88,16 +88,27 @@ struct WAPIError {
     }
 }
 
+struct Serializable {
+    const char* marshal();
+    virtual rapidjson::Document serialize();
+};
+
+const char* Serializable::marshal() {
+    using namespace rapidjson;
+    StringBuffer buf;
+    buf.Clear();
+    Writer<StringBuffer> writer(buf);
+    serialize().Accept(writer);
+    return strdup(buf.GetString());
+};
+
 // struct <Fetchable>
 /* <Fetchable> is an interface to objects which can be retrieved by ID,
  * or 'fetched,' directly from the Discord RESTful backend. */
-struct Fetchable {
+struct Fetchable : Serializable {
     snowflake id;
-
-    virtual WAPIError fetch(snowflake id);
+    virtual WAPIError fetch(Client* c, snowflake id);
     virtual WAPIError parse(const rapidjson::Document* v);
-
-    virtual rapidjson::Document serialize();
     bool matches(snowflake id);
 };
 

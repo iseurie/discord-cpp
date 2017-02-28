@@ -36,7 +36,7 @@ struct GuildTextChannel : Pushable {
     Overwrite::serialize() {
         rapidjson::Document d;
         d["id"] = target;
-        type == MEMBER ? d["type"] = "member" : d["type"] = "role"; 
+        d["type"] = type == MEMBER ? "member" : "role";
         d["allow"] = allow;
         d["deny"] = deny;
     }
@@ -67,8 +67,6 @@ rapidjson::Document GuildTextChannel::serialize() {
     d["last_message_id"] = lmid;
     return d;
 }
-
-WAPIError fetch()
 
 struct DirectTextChannel : Fetchable {
     User recipient;

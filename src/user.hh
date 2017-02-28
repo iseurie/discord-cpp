@@ -91,6 +91,7 @@ struct User : Pushable {
     WAPIError parse(const rapidjson::Document* v);
 };
 
+<<<<<<< HEAD
 rapidjson::Document User::Presence::serialize() {
     rapidjson::Document d;
     d["user"] = *user;
@@ -121,3 +122,6 @@ rapidjson::Document User::VoiceState::serialize() {
 }
 
 }
+=======
+}
+>>>>>>> 298ea1c469137988cca81bf8c25a1284b90f7736

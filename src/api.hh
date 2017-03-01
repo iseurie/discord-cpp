@@ -83,9 +83,15 @@ struct WAPIError {
     USig sig;
 
     WAPIError(ErrorCode _code, USig _sig):code(_code), sig(_sig){}
+    WAPIError(rapidjson::ParseResult r);
 }
 
-struct WAPIResult {
+WAPIError(rapidjson::ParseResult r) {
+    this->code = r.IsError() ? JSON_PARSE_FAILED : NIL;
+    this->sig = r;
+}
+
+struct WAPIResponse {
     WAPIError error;
     rapidjson::Document payload;
 }
@@ -94,22 +100,14 @@ struct WAPIObject {
     virtual rapidjson::Document serialize();
     virtual rapidjson::ParseResult parse(const rapidjson::Document* v);
     const char* marshal();
+    bool matches(snowflake id);
+}
+
+WAPIObject::matches(snowflake id) {
+    return this->id == id;
 }
 
 const char* WAPIObject::marshal() {
-    rapidjson::Document d = serialize();
-    StringBuffer buf;
-    Writer<StringBuffer> writer(buf);
-    d.Accept(writer);
-    return strdup(buf.GetString());
-}
-
-struct Serializable {
-    const char* marshal();
-    virtual rapidjson::Document serialize();
-};
-
-const char* Serializable::marshal() {
     using namespace rapidjson;
     StringBuffer buf;
     buf.Clear();
@@ -123,16 +121,15 @@ const char* Serializable::marshal() {
  * or 'fetched,' directly from the Discord RESTful backend. */
 struct Fetchable : WAPIObject {
     snowflake id;
-    virtual WAPIResult fetch(snowflake id);
-struct Fetchable : Serializable {
-    snowflake id;
-    virtual WAPIError fetch(Client* c, snowflake id);
-    virtual WAPIError parse(const rapidjson::Document* v);
-    bool matches(snowflake id);
+    virtual static const char* web_path = 0;
+    virtual WAPIError fetch(const Client* c, snowflake id);
 };
 
-bool Fetchable::matches(snowflake id) {
-    return id == this->id;
+WAPIError Fetchable::fetch() {
+    char* path;
+    sprintf(path, "%s/%llu", web_path, id);
+    WAPIResult r = c->wGet(path);
+    return r->error == NIL ? WAPIError(parse(&r.payload)) : r->error;
 }
 
 }

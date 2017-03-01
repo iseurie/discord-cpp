@@ -50,20 +50,19 @@ enum ClientOAuthScope : client_scope_t {
  * user for the sake of efficiency and simplicity. Generally, event payloads
  * passing IDs refer only to immediately relevant objects (those already
  * 'created' over the course of a connection's persistence), by virtue of
- * Discord's backend behavior. Should the user fail to cache such an object,
- * they may later choose to retrieve it. */
+ * Discord's backend behavior. */
 class Client {
     private:
-    friend class WAPIObject;
+    friend struct WAPIObject;
     ClientType type;
     std::string sessionEndpointUri, sessionToken;
     snowflake session_id[2];
     client_scope_t scope;
-    WAPIError mkReq(const char* dat[3], rapidjson::Document* out);
-    WAPIError wGet(const char* path, rapidjson::Document* out);
-    WAPIError wDel(const char* path, rapidjson::Document* out);
+    WAPIError doWebReq(const char* dat[3], rapidjson::Document* out = NULL) const;
+    WAPIResponse wGet(const char* path) const;
+    WAPIError wDel(const char* path, rapidjson::Document* out = NULL) const;
     WAPIError wPush(const char* path, const char* payload, 
-            bool mkNew = false, rapidjson::Document* out = NULL);
+            bool mkNew = false, rapidjson::Document* out = NULL) const;
     public:
     enum ClientType { NORMAL, BOT };
     
@@ -84,26 +83,27 @@ class Client {
 };
 
 WAPIError Client::wPush(const char* path, const char* payload,
-        bool mkNew = false, rapidjson::Document* out) {
+        bool mkNew = false, rapidjson::Document* out = NULL) {
     const char* verb = mkNew ? "POST" : "PATCH";
     const char* params[] = { path, verb, payload };
-    return mkReq(params, out);
+    return doWebReq(params, out);
 }
 
-WAPIError Client::wDel(const char* path, rapidjson::Document* out) {
+WAPIError Client::wDel(const char* path, rapidjson::Document* out = NULL) {
     const char* params[] = { path, "DELETE", NULL };
-    return mkReq(params, out);
+    return doWebReq(params, out);
 }
 
-WAPIError Client::wGet(const char* path, rapidjson::Document* out) {
+WAPIResponse Client::wGet(const char* path) {
+    WAPIResponse r;
     const char* params[] = { path, "GET", NULL };
-    return mkReq(params, out);
+    r->error = doWebReq(params, &r.payload);
+    return r;
 }
 
 // @dat An array of three strings containing, in succession, the request path, verb, and payload.
-WAPIError Client::mkReq(const char* dat[3], rapidjson::Document* out = NULL) {
-    #define CHK_CURL_ERR(e, sig) \
-            if(e != CURLE_OK) return WAPIError(CURL_sig_FAILED, e);
+WAPIError Client::doWebReq(const char* dat[3], rapidjson::Document* out = NULL) {
+    #define CHK_CURL_ERR(e, sig) if(e != CURLE_OK) return WAPIError(CURL_sig_FAILED, e);
     struct SWrite {
         rapidjson::Document d;
         WAPIError e;

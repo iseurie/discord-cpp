@@ -8,7 +8,7 @@
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"
 
-namespace dsc {
+namespace discord {
 
 // Used to store Discord object IDs
 typedef snowflake uint64_t;
@@ -82,22 +82,34 @@ struct WAPIError {
     };
     USig sig;
 
-    WAPIError(ErrorCode code, USig sig) {
-        this->code = code;
-        this->sig = sig;
-    }
+    WAPIError(ErrorCode _code, USig _sig):code(_code), sig(_sig){}
+}
+
+struct WAPIResult {
+    WAPIError error;
+    rapidjson::Document payload;
+}
+
+struct WAPIObject {
+    virtual rapidjson::Document serialize();
+    virtual rapidjson::ParseResult parse(const rapidjson::Document* v);
+    const char* marshal();
+}
+
+const char* WAPIObject::marshal() {
+    rapidjson::Document d = serialize();
+    StringBuffer buf;
+    Writer<StringBuffer> writer(buf);
+    d.Accept(writer);
+    return strdup(buf.GetString());
 }
 
 // struct <Fetchable>
 /* <Fetchable> is an interface to objects which can be retrieved by ID,
  * or 'fetched,' directly from the Discord RESTful backend. */
-struct Fetchable {
+struct Fetchable : JSONSerial {
     snowflake id;
-
-    virtual WAPIError fetch(snowflake id);
-    virtual WAPIError parse(const rapidjson::Document* v);
-
-    virtual rapidjson::Document serialize();
+    virtual WAPIResult fetch(snowflake id);
     bool matches(snowflake id);
 };
 

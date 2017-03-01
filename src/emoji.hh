@@ -3,7 +3,7 @@
 
 #include "api.hh"
 
-namespace dsc {
+namespace discord {
 
 struct Emoji : Fetchable {
     std::vector<snowflake> active_roles;
@@ -13,11 +13,11 @@ struct Emoji : Fetchable {
     Emoji();
     ~Emoji();
     rapidjson::Document serialize();
-    WAPIError fetch(snowflake id);
+    WAPIResult fetch(snowflake id);
     WAPIError parse(const rapidjson::Document* v);
 };
 
-Emoji::serialize() {
+rapidjson::Document Emoji::serialize() {
     rapidjson::Document d;
     d["name"] = name;
     d["require_colons"] = require_colons;
@@ -25,6 +25,7 @@ Emoji::serialize() {
     for(int i = 0; i < active_roles.size(); ++i) {
         d["active_roles"][i] = active_roles[i];
     }
+    return d;
 }
 
 }

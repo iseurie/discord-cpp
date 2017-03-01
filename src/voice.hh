@@ -3,7 +3,7 @@
 
 #include "api.hh"
 
-namespace dsc {
+namespace discord {
     struct VoiceChannel : Pushable {
 
     }

@@ -5,18 +5,22 @@
 #include "guild.hh"
 #include "user.hh"
 
-namespace dsc {
+namespace discord {
 
-struct TextMessage : Pushable {
+struct Message : WAPIObject {
     std::string content;
     User author;
     snowflake guild_id;
-    
+
     TextMessage();
-    ~TextChannel();
-    WAPIError fetch(snowflake id);
+
+    WAPIResult fetch(snowflake channel_id, snowflake id);
     WAPIError parse(const rapidjson::Document* v);
 };
+
+WAPIResult fetch(snowflake channel_id, snowflake id) {
+    
+}
 
 struct GuildTextChannel : Pushable {
     struct Overwrite {
@@ -40,6 +44,7 @@ struct GuildTextChannel : Pushable {
         d["allow"] = allow;
         d["deny"] = deny;
     }
+
     std::string topic, name;
     int user_limit, pos;
     snowflake guild_id, lmid;
@@ -67,8 +72,6 @@ rapidjson::Document GuildTextChannel::serialize() {
     d["last_message_id"] = lmid;
     return d;
 }
-
-WAPIError fetch()
 
 struct DirectTextChannel : Fetchable {
     User recipient;

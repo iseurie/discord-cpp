@@ -6,7 +6,7 @@
 #include "channel_text.hh"
 #include <time.h>
 
-namespace dsc {
+namespace discord {
 
 struct Guild : Pushable {
     struct Member : User {

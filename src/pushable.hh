@@ -4,8 +4,9 @@
 #include "api.hh"
 #include "rapidjson/document.h"
 #include <curl/curl.h>
+#include <strings.h>
 
-namespace dsc {
+namespace discord {
 
 // Editable API Object
 /* <Pushable> objects are editable on the web stack, and deltas
@@ -18,38 +19,28 @@ class Pushable : Fetchable {
     bool getErrCode(rapidjson::Document* d, ErrorCode* r);
     
     public:
-    void marshal(char* out);
+    const char* marshal();
     //- to make thread-safe, call curl_global_init()
     WAPIError push(Client* c, bool mkNew = false);
     //- to make thread-safe, call curl_global_init()
-    WAPIError delete(Client* c);
+    WAPIError del(Client* c);
 };
-
-void Pushable::marshal(char* out) {
-    rapidjson::Document d = serialize();
-    StringBuffer buf;
-    Writer<StringBuffer> writer(buf);
-    d.Accept(writer);
-    *out = *buf.GetString();
-};
-
 
 WAPIError Pushable::push(Client* c, bool mkNew = false) {
     WAPIError err;
     char* path;
-    sprintf(path, "%s/%llu", endpoint_name, id);
+    sprintf(path, "%s/%llu", endpoint_name.c_str(), id);
     char* verb;
     if(mkNew) {
         verb = "POST";
     } else {
         verb = "PATCH";
     }
-    char* payload;
-    marshal(payload);
-    return c->mkReq((const char*[]){path, verb, payload});
+    const char* payload = marshal();
+    return c->mkReq((const char*[]){ path, verb, payload });
 }
 
-WAPIError Pushable::delete(Client* c) {
+WAPIError Pushable::del(Client* c) {
     char* path;
     sprintf(path, "%s/%llu", endpoint_name, id);
     char* verb = "DELETE"

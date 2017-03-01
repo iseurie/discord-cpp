@@ -8,7 +8,7 @@
 #include <time.h>
 #include "user.hh"
 
-namespace dsc {
+namespace discord {
 
 typedef client_scope_t : uint16_t;
 
@@ -44,18 +44,18 @@ enum ClientOAuthScope : client_scope_t {
 };
 
 // Websocket event subscriber
-/* <Client> allows the implementation of callbacks to streaming 
- * low-level API events. It persists no data, leaving the task of caching 
- * clients and their IDs to the user for the sake of speed and simplicity. 
- * Generally, event payloads passing IDs refer only to immediately relevant 
- * objects (those already 'created' over the course of a connection's 
- * persistence), by virtue of Discord's design. Should the user fail to cache
- * such an object, they may choose to retrieve it using an instance of its type's 
- * respective <Fetchable>.
- */
+/* <Client> allows the implementation of callbacks to streaming API events, in
+ * addition to facilitating internal requests to the Discord RESTful API. It
+ * persists no data, leaving the task of caching clients and their IDs to the
+ * user for the sake of efficiency and simplicity. Generally, event payloads
+ * passing IDs refer only to immediately relevant objects (those already
+ * 'created' over the course of a connection's persistence), by virtue of
+ * Discord's backend behavior. Should the user fail to cache such an object,
+ * they may later choose to retrieve it. */
+
 class Client {
     private:
-    friend class Pushable;
+    friend class WAPIObject;
     ClientType type;
     std::string sessionEndpointUri, sessionToken;
     snowflake session_id[2];
@@ -70,13 +70,13 @@ class Client {
     // A <BaseEventHandler>, for the user to assign with callbacks. 
     BaseEventHandler handler;
     // Handles user authentication
-    WAPIError auth(const char *user, const char *pass);
+    WAPIError auth(const char* user, const char* pass);
     // Handles bot or OAuth bearer authentication
-    WAPIError auth(const char *token, ClientType t);
+    WAPIError auth(const char* token, ClientType t);
     WAPIError connect();
     WAPIError resume();
     WAPIError hangup();
-    WAPIError updateGameStatus(time_t idle_since, const char *game);
+    WAPIError updateGameStatus(time_t idle_since, const char* game);
     Client();
     ~Client();
 };
@@ -84,7 +84,8 @@ class Client {
 
 // @dat An array of three strings containing, in succession, the request path, verb, and payload.
 WAPIError Client::mkReq(const char* dat[3], rapidjson::Document* out = NULL) {
-    #define CHK_CURL_ERR(e, sig) if(e != CURLE_OK) return WAPIError(CURL_sig_FAILED, e);
+    #define CHK_CURL_ERR(e, sig) \
+            if(e != CURLE_OK) return WAPIError(CURL_sig_FAILED, e);
     struct SWrite {
         rapidjson::Document d;
         WAPIError e;
@@ -115,7 +116,8 @@ WAPIError Client::mkReq(const char* dat[3], rapidjson::Document* out = NULL) {
         CHK_CURL_ERR(curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpStat), INFO);
         if(httpStat < 200 || httpStat > 300) {
             if(d["code"].IsInt()) {
-                out->e = WAPIError(static_cast<ErrorCode>(d["code"].GetInt()), NULL);
+                out->e = WAPIError(static_cast<ErrorCode>(
+                        d["code"].GetInt()), httpStat);
             } else {
                 out->e = WAPIError(JSON_PARSE_FAILED, httpStat);
             }

@@ -4,7 +4,7 @@
 #include "api.hh"
 #include <time.h>
 
-namespace dsc {
+namespace discord {
 
 typedef pmask_t uint64_t;
 typedef user_status_t int8_t;
@@ -55,7 +55,7 @@ struct User : Pushable {
     
     ~User();
     User();
-    WAPIError fetch(snowflake id);
+    WAPIResult fetch(snowflake id);
     WAPIError parse(const rapidjson::Document* v);
 };
 

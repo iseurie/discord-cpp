@@ -26,7 +26,7 @@ struct EGuildAdd {
     Meta meta;
     Guild subject;
 };
-struct EGuildDel { snowflake id; bool available; bool kicked; };
+struct EGuildDel { snowflake id; bool available, kicked; };
 struct EGuildMemberAdd {
     // Guild-specific meta-data.
     snowflake guild_id;

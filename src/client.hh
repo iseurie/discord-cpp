@@ -52,7 +52,6 @@ enum ClientOAuthScope : client_scope_t {
  * 'created' over the course of a connection's persistence), by virtue of
  * Discord's backend behavior. Should the user fail to cache such an object,
  * they may later choose to retrieve it. */
-
 class Client {
     private:
     friend class WAPIObject;
@@ -61,7 +60,10 @@ class Client {
     snowflake session_id[2];
     client_scope_t scope;
     WAPIError mkReq(const char* dat[3], rapidjson::Document* out);
-
+    WAPIError wGet(const char* path, rapidjson::Document* out);
+    WAPIError wDel(const char* path, rapidjson::Document* out);
+    WAPIError wPush(const char* path, const char* payload, 
+            bool mkNew = false, rapidjson::Document* out = NULL);
     public:
     enum ClientType { NORMAL, BOT };
     
@@ -81,6 +83,22 @@ class Client {
     ~Client();
 };
 
+WAPIError Client::wPush(const char* path, const char* payload,
+        bool mkNew = false, rapidjson::Document* out) {
+    const char* verb = mkNew ? "POST" : "PATCH";
+    const char* params[] = { path, verb, payload };
+    return mkReq(params, out);
+}
+
+WAPIError Client::wDel(const char* path, rapidjson::Document* out) {
+    const char* params[] = { path, "DELETE", NULL };
+    return mkReq(params, out);
+}
+
+WAPIError Client::wGet(const char* path, rapidjson::Document* out) {
+    const char* params[] = { path, "GET", NULL };
+    return mkReq(params, out);
+}
 
 // @dat An array of three strings containing, in succession, the request path, verb, and payload.
 WAPIError Client::mkReq(const char* dat[3], rapidjson::Document* out = NULL) {

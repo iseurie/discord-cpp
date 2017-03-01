@@ -4,11 +4,12 @@
 #include "rapidjson/document.h"
 #include "api.hh"
 #include "channel_text.hh"
-#include <time.h>
+#include "3339.hh"
 
 namespace discord {
 
 struct Guild : Pushable {
+    static WAPIError getChannels(Client* c, std::vector<TextChannel>* text);
     struct Member : User {
         time_t joined;
         std::string nick; // where empty, assume none
@@ -16,17 +17,14 @@ struct Guild : Pushable {
         bool deaf, mute;
     }
 
-    time_t joined_at;
-    bool embed_enabled, available;
-    std::string icon_hash, splash_hash, region;
+    bool embed_enabled;
     
     std::string icon_hash, splash_hash, region;
     std::vector<TextChannel> text_channels;
     std::vector<VoiceChannel> voice_channels;
     std::vector<Role> roles;
     std::vector<Emoji> emojis;
-    std::vector<VoiceState> voice_state;
-    std::vector<GuildMember>;
+    std::vector<GuildMember> members;
     int afk_timeout, verification_level, 
             default_message_notifications, 
             mfa_level;
@@ -39,11 +37,87 @@ struct Guild : Pushable {
     ~Guild();
     Guild();
     WAPIError fetch(snowflake id);
-    rapidjson::ParseResult parse(rapidjson::Document v);
+    WAPIError parse(rapidjson::Document v);
     rapidjson::Document serialize();
+    
+    WAPIError Guild::mkChannel(Client* c, TextChannel ch);
+    WAPIError Guild::mkChannel(Client* c, VoiceChannel ch);
+
+    static WAPIError Guild::mkChannel(Client* c, snowflake id, TextChannel ch);
+    static WAPIError Guild::mkChannel(Client* c, snowflake id, VoiceChannel ch);
+    
+    WAPIError Guild::mvChannelPos(Client* c, snowflake id, const std::vector<snowflake>* ids);
+    static WAPIError Guild::mvChannelPos(Client* c, const std::vector<snowflake>* ids);
+    
+    WAPIError Guild::getChannels(Client* c, 
+            std::vector<TextChannel>* text, 
+            std::vector<VoiceChannel>* voice);
+    static WAPIError Guild::getChannels(Client* c,
+            std::vector<TextChannel>* text, 
+            std::vector<VoiceChannel>* voice);
+    
 };
 
-rapidjson::Document Guild::serialize() {
+WAPIError Guild::mkChannel(Client* c, TextChannel ch) {
+    mkChannel(c, id, ch);
+}
+
+static WAPIError Guild::mkChannel(Client* c, snowflake id, TextChannel ch) {
+    char* path, payload;
+    sprintf(path, "guilds/%llu/channels", id);
+    payload = ch.marshal();
+    return wPush(c, path, payload);
+}
+
+WAPIError Guild::mkChannel(Client* c, VoiceChannel ch) {
+    mkChannel(c, id, ch);
+}
+
+static WAPIError Guild::mkChannel(Client* c, snowflake id, VoiceChannel ch) {
+    char* path, payload;
+    sprintf(path, "guilds/%llu/channels", id);
+    payload = ch.marshal();
+    return wPush(c, path, payload);
+}
+
+WAPIError Guild::getChannels(Client* c, const std::vector<TextChannel>* text, std::vector<VoiceChannel>* voice) {
+    getChannels(c, id, text, voice);
+}
+
+WAPIError Guild::mvChannelPos(Client* c, const std::vector<snowflake>* ids) {
+    mvChannelPos(c, id, ids);
+}
+
+static WAPIError Guild::mvChannelPos(Client* c, snowflake id, const std::vector<snowflake>* ids) {
+    rapidjson::Document d;
+    for(int i = 0; i < ids->size(); ++i) {
+        d[i]["id"] = ids[i];
+        d[i]["position"] = i;
+    }
+    const char* payload = d.Root().GetString();
+    char* path;
+    sprintf(path, "guilds/%llu/channels", snowflake);
+    c->wPush(path, payload, &d);
+}
+
+static WAPIError Guild::getChannels(Client* c, snowflake id, std::vector<TextChannel>* text, std::vector<VoiceChannel>* voice) {
+    #define CHK_WAPI_ERR(e) if(e.code != NIL) return e;
+    rapidjson::Document d;
+    CHK_WAPI_ERR(c->wGet(params, &d));
+    for(int i = 0; i < d.Size(); ++i) {
+        if(d[i]["type"].GetString() == "text") {
+            TextChannel t;
+            CHK_WAPI_ERR(t.parse(d[i]));
+            text->push_back(t);
+        } else {
+            VoiceChannel v;
+            CHK_WAPI_ERR(v.parse(d[i]))
+            voice->push_back(v);
+        }
+    }
+}
+
+rapidjson::Document Guild::serialize(Meta* meta = NULL) {
     rapidjson::Document d;
     d["id"]                 = id;
     d["name"]               = name;
@@ -57,18 +131,30 @@ rapidjson::Document Guild::serialize() {
     d["embed_channel_id"]   = embed_channel_id;
     d["verification_level"] = verification_level;
     d["default_message_notifications"] = default_message_notifications;
-    for(int i = 0; i < roles.length(); ++i) {
-        d["roles"][i] = roles[i].serialize();
-    } for(int i = 0; i < emojis.length(); ++i) {
-        d["emojis"][i] = (Value)emojis[i].serialize();
-    } for(int i = 0; i < voice_state.length(); ++i) {
-        d["voice_states"][i] = (Value)voice_state[i].serialize();
-    } for(int i = 0; i < members.length(); ++i) {
-        d["members"][i] = members[i].serialize();
-    } for(int i = 0; i < text_channels.length(); ++i) {
-        d["channels"][i] = text_channels[i].serialize();
-    } for(int i = 0; i < voice_channels.length(); ++i) {
-        d["channels"][i] = voice_channels[i].serialize();
+    if(meta) {
+        char* tstr;
+        RfC3339::encode(m->joined_at, NULL, tstr);
+        d["joined_at"] = tstr;  
+        d["large"] = false; // dummy value
+        d["unavailable"] = !m->available;
+        d["member_count"] = members.size();
+        for(int i = 0;  d < members.size(); ++i) {
+            d["voice_states"] = members[i].voice_state.serialize();
+        } for(int i = 0; i < roles.length(); ++i) {
+            d["roles"][i] = roles[i].serialize();
+        } for(int i = 0; i < emojis.length(); ++i) {
+            d["emojis"][i] = emojis[i].serialize();
+        } for(int i = 0; i < voice_state.length(); ++i) {
+            d["voice_states"][i] = members[i].voice_state.serialize();
+        } for(int i = 0; i < members.length(); ++i) {
+            d["members"][i] = members[i].serialize();
+        } for(int i = 0; i < text_channels.length(); ++i) {
+            d["channels"][i] = text_channels[i].serialize();
+        } for(int i = 0; i < voice_channels.length(); ++i) {
+            d["channels"][(i+voice_channels.length())] = voice_channels[i].serialize();
+        } for(int i = 0; i < members.length(); ++i) {
+            d["presences"] = members[i].presence.serialize();
+        }
     }
     return d;
 }

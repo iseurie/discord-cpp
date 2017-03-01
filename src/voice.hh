@@ -7,6 +7,8 @@ namespace discord {
     struct VoiceChannel : Pushable {
 
     }
+<<<<<<< HEAD
+=======
 
     struct VoiceState {
         enum SpeakerStatus : char {
@@ -20,6 +22,7 @@ namespace discord {
         snowflake guild_id, channel_id, user_id;
         snowflake session_id[2]; // bit-width 128
     }
+>>>>>>> 298ea1c469137988cca81bf8c25a1284b90f7736
 }
 
 #endif

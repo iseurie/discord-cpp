@@ -40,7 +40,7 @@ struct GuildTextChannel : Pushable {
     Overwrite::serialize() {
         rapidjson::Document d;
         d["id"] = target;
-        type == MEMBER ? d["type"] = "member" : d["type"] = "role"; 
+        d["type"] = type == MEMBER ? "member" : "role";
         d["allow"] = allow;
         d["deny"] = deny;
     }

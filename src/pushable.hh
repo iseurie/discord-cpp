@@ -3,6 +3,7 @@
 
 #include "api.hh"
 #include "rapidjson/document.h"
+#include <strings.h>
 #include <curl/curl.h>
 #include <strings.h>
 
@@ -20,33 +21,22 @@ class Pushable : Fetchable {
     
     public:
     const char* marshal();
-    //- to make thread-safe, call curl_global_init()
     WAPIError push(Client* c, bool mkNew = false);
-    //- to make thread-safe, call curl_global_init()
     WAPIError del(Client* c);
 };
 
 WAPIError Pushable::push(Client* c, bool mkNew = false) {
     WAPIError err;
     char* path;
-    sprintf(path, "%s/%llu", endpoint_name.c_str(), id);
-    char* verb;
-    if(mkNew) {
-        verb = "POST";
-    } else {
-        verb = "PATCH";
-    }
-    const char* payload = marshal();
-    return c->mkReq((const char*[]){ path, verb, payload });
+   sprintf(path, "%s/%llu", endpoint_name, id);
+    char* payload = marshal();
+    return c->wPush(path, payload, mkNew, NULL);
 }
 
 WAPIError Pushable::del(Client* c) {
     char* path;
     sprintf(path, "%s/%llu", endpoint_name, id);
-    char* verb = "DELETE"
-    char* payload;
-    marshal(payload);
-    return c->mkReq((const char*[]){path, verb, payload});
+    return c->wDel(path);
 }
 
 }

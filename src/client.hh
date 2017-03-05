@@ -8,11 +8,11 @@
 #include <time.h>
 #include "user.hh"
 
-namespace discord {
+namespace dsc {
 
 typedef client_scope_t : uint16_t;
 
-enum GatewayOPs : uint8_t {
+enum struct GatewayOPs : uint8_t {
     DISPATCH = 0,
     HEARTBEAT,
     IDENTIFY,
@@ -29,7 +29,7 @@ enum GatewayOPs : uint8_t {
 
 // Client OAuth Scope enumeration
 // Enumerates the Discord client OAuth scope.
-enum ClientOAuthScope : client_scope_t {
+enum struct ClientOAuthScope : client_scope_t {
     EMAIL       = 0x01 << 1;
     IDENTIFY    = 0x01 << 2;
     BOT         = 0x01 << 3;
@@ -54,7 +54,7 @@ enum ClientOAuthScope : client_scope_t {
 class Client {
     private:
     friend struct WAPIObject;
-    ClientType type;
+    Type type;
     std::string sessionEndpointUri, sessionToken;
     snowflake session_id[2];
     client_scope_t scope;
@@ -64,9 +64,9 @@ class Client {
     WAPIError wPush(const char* path, const char* payload, 
             bool mkNew = false, rapidjson::Document* out = NULL) const;
     public:
-    enum ClientType { NORMAL, BOT };
+    enum struct Type { NORMAL, BOT };
     
-    ClientType getClientType();
+    Type getClientType();
     
     // A <BaseEventHandler>, for the user to assign with callbacks. 
     BaseEventHandler handler;
@@ -140,7 +140,7 @@ WAPIError Client::doWebReq(const char* dat[3], rapidjson::Document* out = NULL) 
                 out->e = WAPIError(JSON_PARSE_FAILED, httpStat);
             }
         } else {
-            out->e = WAPIError(NIL, NULL);
+            out->e = WAPIError(ErrorCode::OK, NULL);
         }
         return size * nmemb;
     };

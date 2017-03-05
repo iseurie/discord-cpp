@@ -8,7 +8,7 @@
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"
 
-namespace discord {
+namespace dsc {
 
 // Used to store Discord object IDs
 typedef snowflake uint64_t;
@@ -19,7 +19,7 @@ typedef discriminator unsigned short;
 /* This enum contains Discord error codes consistent across
  * the web stack, in addition to a few enumerations for internal
  * failures of the client-side implementation. */
-enum ErrorCode : unsigned short {
+enum struct WErrorCode : unsigned short {
     OK                      = 0,
     CURL_INIT_FAILED,
     CURL_PERFORM_FAILED,
@@ -74,7 +74,7 @@ enum ErrorCode : unsigned short {
 };
 
 struct WAPIError {
-    ErrorCode code;
+    WErrorCode code;
     union USig {
         rapidjson::ParseError parsing;
         CURLcode curl;
@@ -82,12 +82,12 @@ struct WAPIError {
     };
     USig sig;
 
-    WAPIError(ErrorCode _code, USig _sig):code(_code), sig(_sig){}
+    WAPIError(WErrorCode _code, USig _sig):code(_code), sig(_sig){}
     WAPIError(rapidjson::ParseResult r);
 }
 
 WAPIError(rapidjson::ParseResult r) {
-    this->code = r.IsError() ? JSON_PARSE_FAILED : NIL;
+    this->code = r.IsError() ? WErrorCode::JSON_PARSE_FAILED : WErrorCode::OK;
     this->sig = r;
 }
 
@@ -98,9 +98,7 @@ struct WAPIResponse {
 
 struct WAPIObject {
     virtual rapidjson::Document serialize();
-    virtual rapidjson::ParseResult parse(const rapidjson::Document* v);
-    const char* marshal();
-    bool matches(snowflake id);
+    virtual rapidjson::ParseResult parse(const rapidjson::Do);
 }
 
 WAPIObject::matches(snowflake id) {

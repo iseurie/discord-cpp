@@ -1,9 +1,9 @@
 #define H_DSCPP_PERMS
-namespace discord::perms {
+namespace dsc::perms {
 
 typedef pmask_t uint64_t;
 
-enum PermBits : pmask_t {
+enum struct PermBits : pmask_t {
     CREATE_INSTANT_INVITE   = 0x01 << 1,
     KICK_MEMBERS            = 0x01 << 2,
     BAN_MEMBERS             = 0x01 << 3,
@@ -48,11 +48,8 @@ struct Role : WAPIObject {
     rapidjson::Document serialize();
 };
 
-
-
 struct Overwrite : WAPIObject {
-    enum OverwriteType { ROLE, MEMBER };
-        
+    enum struct Type { ROLE, MEMBER }; 
     snowflake target_id;
 
     OverwiteType t;

@@ -7,33 +7,26 @@
 #include <curl/curl.h>
 #include <strings.h>
 
-namespace discord {
+namespace dsc {
 
 // Editable API Object
 /* <Pushable> objects are editable on the web stack, and deltas
  * to their payloads and state may be 'pushed' via their methods
  * following retrieval. */
-class Pushable : Fetchable {
-    private:
-    std::string endpoint_name;
-    void buildEndpointUri(char* out);
-    bool getErrCode(rapidjson::Document* d, ErrorCode* r);
-    
-    public:
-    const char* marshal();
-    WAPIError push(Client* c, bool mkNew = false);
-    WAPIError del(Client* c);
+struct Pushable : Fetchable {
+    virtual const char* marshal() = 0 const;
+    WAPIError push(const Client* c, bool mkNew = false);
+    WAPIError del(const Client* c);
 };
 
-WAPIError Pushable::push(Client* c, bool mkNew = false) {
+WAPIResult Pushable::push(const Client* c, bool mkNew = false) {
     WAPIError err;
     char* path;
-   sprintf(path, "%s/%llu", endpoint_name, id);
-    char* payload = marshal();
-    return c->wPush(path, payload, mkNew, NULL);
+    sprintf(path, "%s/%llu", web_path, id);
+    return c->wPush(path, marshal(), mkNew, NULL);
 }
 
-WAPIError Pushable::del(Client* c) {
+WAPIError Pushable::del(const Client* c) {
     char* path;
     sprintf(path, "%s/%llu", endpoint_name, id);
     return c->wDel(path);

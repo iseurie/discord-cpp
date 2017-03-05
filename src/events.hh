@@ -5,7 +5,7 @@
 #include "perms.hh"
 #include "user.hh"
 
-namespace discord {
+namespace dsc {
 
 //- Events; partitions "create" payload contents and batch Adds to separate events to simplify
 struct EConnect {}; 

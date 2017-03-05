@@ -6,10 +6,9 @@
 #include "channel_text.hh"
 #include "3339.hh"
 
-namespace discord {
+namespace dsc {
 
 struct Guild : Pushable {
-    static WAPIError getChannels(Client* c, std::vector<TextChannel>* text);
     struct Member : User {
         time_t joined;
         std::string nick; // where empty, assume none
@@ -30,65 +29,50 @@ struct Guild : Pushable {
             mfa_level;
     std::string name;
     snowflake owner_id, afk_channel_id, embed_channel_id;
-
-    // - heap-allocated references?
-    Extra extra;
     
-    ~Guild();
-    Guild();
     WAPIError fetch(snowflake id);
     WAPIError parse(rapidjson::Document v);
     rapidjson::Document serialize();
     
-    WAPIError Guild::mkChannel(Client* c, TextChannel ch);
-    WAPIError Guild::mkChannel(Client* c, VoiceChannel ch);
-
-    static WAPIError Guild::mkChannel(Client* c, snowflake id, TextChannel ch);
-    static WAPIError Guild::mkChannel(Client* c, snowflake id, VoiceChannel ch);
-    
-    WAPIError Guild::mvChannelPos(Client* c, snowflake id, const std::vector<snowflake>* ids);
-    static WAPIError Guild::mvChannelPos(Client* c, const std::vector<snowflake>* ids);
-    
-    WAPIError Guild::getChannels(Client* c, 
-            std::vector<TextChannel>* text, 
-            std::vector<VoiceChannel>* voice);
-    static WAPIError Guild::getChannels(Client* c,
-            std::vector<TextChannel>* text, 
-            std::vector<VoiceChannel>* voice);
-    
+    static WAPIError Guild::mkChannel(const Client* c,
+            snowflake id = this->id, const TextChannel* ch);
+    static WAPIError Guild::mkChannel(const Client* c,
+            snowflake id = this->id, const VoiceChannel* ch);
+    static WAPIError Guild::mvChannelPos(const Client* c, 
+            const std::vector<snowflake>* ids);
+    static WAPIError Guild::getChannels(const Client* c, 
+            snowflake id = this->id,
+            std::vector<TextChannel>* text = NULL, 
+            std::vector<VoiceChannel>* voice = NULL);
+    Guild();
 };
 
-WAPIError Guild::mkChannel(Client* c, TextChannel ch) {
+static WAPIError Guild::mkChannel(const Client* c, snowflake id, const TextChannel* ch) {
+    char* path, payload;
+    sprintf(path, "guilds/%llu/channels", id);
+    return wPush(c, path, ch->marshal());
+}
+
+WAPIError Guild::mkChannel(const Client* c, VoiceChannel ch) {
     mkChannel(c, id, ch);
 }
 
-static WAPIError Guild::mkChannel(Client* c, snowflake id, TextChannel ch) {
+static WAPIError Guild::mkChannel(const Client* c, snowflake id, VoiceChannel ch) {
     char* path, payload;
     sprintf(path, "guilds/%llu/channels", id);
     payload = ch.marshal();
     return wPush(c, path, payload);
 }
 
-WAPIError Guild::mkChannel(Client* c, VoiceChannel ch) {
-    mkChannel(c, id, ch);
-}
-
-static WAPIError Guild::mkChannel(Client* c, snowflake id, VoiceChannel ch) {
-    char* path, payload;
-    sprintf(path, "guilds/%llu/channels", id);
-    payload = ch.marshal();
-    return wPush(c, path, payload);
-}
-
-WAPIError Guild::getChannels(Client* c, const std::vector<TextChannel>* text, std::vector<VoiceChannel>* voice) {
+WAPIError Guild::getChannels(const Client* c, const std::vector<TextChannel>* text, std::vector<VoiceChannel>* voice) {
     getChannels(c, id, text, voice);
 }
 
-WAPIError Guild::mvChannelPos(Client* c, const std::vector<snowflake>* ids) {
+WAPIError Guild::mvChannelPos(const Client* c, const std::vector<snowflake>* ids) {
     mvChannelPos(c, id, ids);
 }
 
-static WAPIError Guild::mvChannelPos(Client* c, snowflake id, const std::vector<snowflake>* ids) {
+static WAPIError Guild::mvChannelPos(const Client* c, snowflake id, const std::vector<snowflake>* ids) {
     rapidjson::Document d;
     for(int i = 0; i < ids->size(); ++i) {
         d[i]["id"] = ids[i];
@@ -100,16 +84,16 @@ static WAPIError Guild::mvChannelPos(Client* c, snowflake id, const std::vector<
     c->wPush(path, payload, &d);
 }
 
-static WAPIError Guild::getChannels(Client* c, snowflake id, std::vector<TextChannel>* text, std::vector<VoiceChannel>* voice) {
+static WAPIError Guild::getChannels(const Client* c, snowflake id, std::vector<TextChannel>* text, std::vector<VoiceChannel>* voice) {
     #define CHK_WAPI_ERR(e) if(e.code != NIL) return e;
     rapidjson::Document d;
     CHK_WAPI_ERR(c->wGet(params, &d));
     for(int i = 0; i < d.Size(); ++i) {
-        if(d[i]["type"].GetString() == "text") {
+        if(text && d[i]["type"].GetString() == "text") {
             TextChannel t;
             CHK_WAPI_ERR(t.parse(d[i]));
             text->push_back(t);
-        } else {
+        } else if(voice) {
             VoiceChannel v;
             CHK_WAPI_ERR(v.parse(d[i]))
             voice->push_back(v);

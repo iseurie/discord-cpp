@@ -3,7 +3,7 @@
 
 #include "api.hh"
 
-namespace discord {
+namespace dsc {
 
 struct Emoji : Fetchable {
     std::vector<snowflake> active_roles;

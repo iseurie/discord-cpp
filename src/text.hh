@@ -4,8 +4,10 @@
 #include "api.hh"
 #include "guild.hh"
 #include "user.hh"
+#include <stdio.h>
+#include <strings.h>
 
-namespace discord {
+namespace dsc {
 
 struct Message : WAPIObject {
     std::string content;
@@ -13,46 +15,38 @@ struct Message : WAPIObject {
     snowflake guild_id;
 
     TextMessage();
-
-    WAPIResult fetch(snowflake channel_id, snowflake id);
-    WAPIError parse(const rapidjson::Document* v);
+    WAPIError fetch(snowflake chid, snowflake id);
+    static WAPIError push(const Client* c, bool mkNew = false);
+    rapidjson::ParseResult parse(const rapidjson::Document* v);
 };
 
-WAPIResult fetch(snowflake channel_id, snowflake id) {
-    
+WAPIError Message::push(const Client* c, snowflake chid, bool mkNew = false) {
+    char* path;
+    sprintf(path, "channels/%llu/messages/%llu", chid, id);
+    return wPush(path, marshal(), mkNew, NULL);
+}
+
+WAPIError Message::fetch(const Client* c, snowflake chaid, snowflake id) {
+    char* path;
+    sprintf(path, "channels/%llu/messages/%llu", chid, id);
+    WAPIResult r = c->wGet(path);
+    return r->error == WErrorCode::OK ? parse(&r.payload) : r->error;
+}
+
+struct TextChannel : Pushable {
+    WAPIError getMessages(std::vector<Message>* out) const = 0;
+    WAPIError getMessage(Message* out) const = 0;
 }
 
 struct GuildTextChannel : Pushable {
-    struct Overwrite {
-        enum OverwriteType { ROLE, MEMBER };
-        
-        snowflake target;
-
-        OverwiteType t;
-        pmask_t allow;
-        pmask_t deny;
-
-        rapidjson::Document serialize();
-        ~Overwrite();
-        Overwrite();
-    }
-
-    Overwrite::serialize() {
-        rapidjson::Document d;
-        d["id"] = target;
-        d["type"] = type == MEMBER ? "member" : "role";
-        d["allow"] = allow;
-        d["deny"] = deny;
-    }
+    
 
     std::string topic, name;
     int user_limit, pos;
     snowflake guild_id, lmid;
     std::vector<Overwrite> overwrites;
 
-    ~GuildTextChannel();
-    GuildTextChannel();
-    WAPIError fetch(Client* c, snowflake id);
+    WAPIError fetch(const Client* c, snowflake id);
     WAPIError parse(const rapidjson::Document* v);
     rapidjson::Document serialize();
 };

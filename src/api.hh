@@ -1,9 +1,7 @@
 #ifndef H_DSCPP_API
 #define H_DSCPP_API
 
-
 #include <stdint.h>
-#include <curl/curl.h>
 #include "rapidjson/document.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"

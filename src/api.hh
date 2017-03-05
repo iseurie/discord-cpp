@@ -92,12 +92,12 @@ WAPIError(rapidjson::ParseResult r) {
 struct WAPIResponse {
     WAPIError error;
     rapidjson::Document payload;
-}
+};
 
 struct WAPIObject {
     virtual rapidjson::Document serialize();
     virtual rapidjson::ParseResult parse(const rapidjson::Document* v);
-}
+};
 
 WAPIObject::matches(snowflake id) {
     return this->id == id;
@@ -110,7 +110,7 @@ const char* WAPIObject::marshal() {
     Writer<StringBuffer> writer(buf);
     serialize().Accept(writer);
     return strdup(buf.GetString());
-};
+}
 
 // struct <Fetchable>
 /* <Fetchable> is an interface to objects which can be retrieved by ID,

@@ -31,16 +31,16 @@ struct Guild : Pushable {
     snowflake owner_id, afk_channel_id, embed_channel_id;
     
     WAPIError fetch(snowflake id);
-    WAPIError parse(rapidjson::Document v);
+    rapidjson::ParseResult parse(rapidjson::Document v);
     rapidjson::Document serialize();
     
-    static WAPIError Guild::mkChannel(const Client* c,
+    static WAPIError mkChannel(const Client* c,
             snowflake id = this->id, const TextChannel* ch);
-    static WAPIError Guild::mkChannel(const Client* c,
+    static WAPIError mkChannel(const Client* c,
             snowflake id = this->id, const VoiceChannel* ch);
-    static WAPIError Guild::mvChannelPos(const Client* c, 
+    static WAPIError mvChannelPos(const Client* c, 
             const std::vector<snowflake>* ids);
-    static WAPIError Guild::getChannels(const Client* c, 
+    static WAPIError getChannels(const Client* c, 
             snowflake id = this->id,
             std::vector<TextChannel>* text = NULL, 
             std::vector<VoiceChannel>* voice = NULL);

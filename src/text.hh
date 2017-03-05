@@ -9,24 +9,33 @@
 
 namespace dsc {
 
-struct Message : WAPIObject {
+struct Message : Pushable {
     std::string content;
+    time_t sent, revised;
+    bool pinned, mentions_all;
+    std::tuple<std::vector<User>, std::vector<Role>> mentions;
     User author;
-    snowflake guild_id;
+    std::vector<User> mentions;
+    std::Role mentions;
+    snowflake guild_id, channel_id;
+    
 
-    TextMessage();
-    WAPIError fetch(snowflake chid, snowflake id);
-    static WAPIError push(const Client* c, bool mkNew = false);
-    rapidjson::ParseResult parse(const rapidjson::Document* v);
+struct TextMessage : Pushable {
+    std::string content;
+    time_t timestamp;
+    bool pinned;
+    User author;
+    snowflake guild_id, channel_id;
+    Message();
 };
 
-WAPIError Message::push(const Client* c, snowflake chid, bool mkNew = false) {
+WAPIError TextMessage::push(const Client* c, snowflake chid, bool mkNew = false) {
     char* path;
     sprintf(path, "channels/%llu/messages/%llu", chid, id);
     return wPush(path, marshal(), mkNew, NULL);
 }
 
-WAPIError Message::fetch(const Client* c, snowflake chaid, snowflake id) {
+WAPIError TextMessage::fetch(const Client* c, snowflake chid, snowflake id) {
     char* path;
     sprintf(path, "channels/%llu/messages/%llu", chid, id);
     WAPIResult r = c->wGet(path);
@@ -47,7 +56,7 @@ struct GuildTextChannel : Pushable {
     std::vector<Overwrite> overwrites;
 
     WAPIError fetch(const Client* c, snowflake id);
-    WAPIError parse(const rapidjson::Document* v);
+    rapidjson::ParseResult parse(const rapidjson::Document* v);
     rapidjson::Document serialize();
 };
 
@@ -71,7 +80,7 @@ struct DirectTextChannel : Fetchable {
     User recipient;
     DirectTextChannel();
     WAPIError fetch(snowflake id);
-    WAPIError parse(const rapidjson::Document* v);
+    rapidjson::ParseResult parse(const rapidjson::Document* v);
 };
 
 }

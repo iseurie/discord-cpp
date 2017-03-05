@@ -117,13 +117,13 @@ WAPIError Client::doWebReq(const char* dat[3], rapidjson::Document* out = NULL) 
         CHK_CURL_ERR(curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpStat), INFO);
         if(httpStat < 200 || httpStat > 300) {
             if(d["code"].IsInt()) {
-                out->e = WAPIError(static_cast<ErrorCode>(
+                out->e = WAPIError(static_cast<WErrorCode>(
                         d["code"].GetInt()), httpStat);
             } else {
                 out->e = WAPIError(JSON_PARSE_FAILED, httpStat);
             }
         } else {
-            out->e = WAPIError(ErrorCode::OK, NULL);
+            out->e = WAPIError(WErrorCode::OK, NULL);
         }
         return size * nmemb;
     };

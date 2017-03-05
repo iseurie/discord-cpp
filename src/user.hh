@@ -43,7 +43,7 @@ struct User : Pushable {
     ~User();
     User();
     WAPIResult fetch(snowflake id);
-    WAPIError parse(const rapidjson::Document* v);
+    rapidjson::ParseResult parse(const rapidjson::Document* v);
 };
 
 rapidjson::Document User::Presence::serialize() {

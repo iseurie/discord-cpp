@@ -84,7 +84,7 @@ struct WAPIError {
 
     WAPIError(WErrorCode _code, USig _sig):code(_code), sig(_sig){}
     WAPIError(rapidjson::ParseResult r);
-}
+};
 
 WAPIError(rapidjson::ParseResult r) {
     this->code = r.IsError() ? WErrorCode::JSON_PARSE_FAILED : WErrorCode::OK;
@@ -98,7 +98,7 @@ struct WAPIResponse {
 
 struct WAPIObject {
     virtual rapidjson::Document serialize();
-    virtual rapidjson::ParseResult parse(const rapidjson::Do);
+    virtual rapidjson::ParseResult parse(const rapidjson::Document* v);
 }
 
 WAPIObject::matches(snowflake id) {
@@ -119,16 +119,8 @@ const char* WAPIObject::marshal() {
  * or 'fetched,' directly from the Discord RESTful backend. */
 struct Fetchable : WAPIObject {
     snowflake id;
-    virtual static const char* web_path = 0;
-    virtual WAPIError fetch(const Client* c, snowflake id);
+    virtual WAPIError fetch(const Client* c, snowflake id) = 0;
 };
-
-WAPIError Fetchable::fetch() {
-    char* path;
-    sprintf(path, "%s/%llu", web_path, id);
-    WAPIResult r = c->wGet(path);
-    return r->error == NIL ? WAPIError(parse(&r.payload)) : r->error;
-}
 
 }
 

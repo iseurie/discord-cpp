@@ -10,7 +10,6 @@
 
 namespace dsc {
 
-typedef client_scope_t : uint16_t;
 
 enum struct GatewayOPs : uint8_t {
     DISPATCH = 0,
@@ -25,22 +24,6 @@ enum struct GatewayOPs : uint8_t {
     INVALID_SESSION,
     HELLO,
     HEARTBEAT_ACK,
-};
-
-// Client OAuth Scope enumeration
-// Enumerates the Discord client OAuth scope.
-enum struct ClientOAuthScope : client_scope_t {
-    EMAIL       = 0x01 << 1;
-    IDENTIFY    = 0x01 << 2;
-    BOT         = 0x01 << 3;
-    CONNECTIONS = 0x01 << 4;
-    GUILDS      = 0x01 << 5;
-    JOIN_GUILDS = 0x01 << 6;
-    JOIN_GDM    = 0x01 << 7;
-    MSG_READ    = 0x01 << 8;
-    RPC         = 0x01 << 9;
-    RPC_API     = 0x01 << 10;
-    WEBHOOK_INCOMING = 0x01 << 11;
 };
 
 // Websocket event subscriber
